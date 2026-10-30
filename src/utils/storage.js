@@ -1,11 +1,11 @@
 import { DEFAULT_COMPANY, DEFAULT_CUSTOMERS, INITIAL_SAMPLE_INVOICE } from '../constants/defaults';
 
 const STORAGE_KEYS = {
-  INVOICES: 'poly_bag_invoices_v1',
-  COMPANY: 'poly_bag_company_v1',
-  CUSTOMERS: 'poly_bag_customers_v1',
-  ACTIVE_INVOICE: 'poly_bag_active_draft_v1',
-  SETTINGS: 'poly_bag_settings_v1'
+  INVOICES: 'poly_bag_invoices_v2',
+  COMPANY: 'poly_bag_company_v2',
+  CUSTOMERS: 'poly_bag_customers_v2',
+  ACTIVE_INVOICE: 'poly_bag_active_draft_v2',
+  SETTINGS: 'poly_bag_settings_v2'
 };
 
 // Safe localStorage helper

@@ -1,10 +1,9 @@
 import React from 'react';
-import { Package, FileText, PlusCircle, Calculator, Users, Settings, Layers, Menu, X } from 'lucide-react';
+import { Package, FileText, Calculator, Users, Settings, Menu, X } from 'lucide-react';
 
 export default function Navbar({
   activeTab,
   setActiveTab,
-  onNewInvoice,
   invoicesCount = 0
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
@@ -72,16 +71,6 @@ export default function Navbar({
             })}
           </nav>
 
-          {/* Right Action: Create Invoice */}
-          <div className="hidden md:flex items-center gap-2">
-            <button
-              onClick={onNewInvoice}
-              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-xs transition-all active:scale-95"
-            >
-              <PlusCircle className="w-4 h-4" /> New Invoice
-            </button>
-          </div>
-
           {/* Mobile hamburger */}
           <div className="flex md:hidden">
             <button
@@ -96,7 +85,7 @@ export default function Navbar({
 
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-100 bg-white p-4 space-y-2">
+        <div className="md:hidden border-t border-slate-100 bg-white p-4 space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -122,21 +111,8 @@ export default function Navbar({
               </button>
             );
           })}
-
-          <div className="pt-2 border-t border-slate-100">
-            <button
-              onClick={() => {
-                onNewInvoice();
-                setMobileMenuOpen(false);
-              }}
-              className="w-full flex items-center justify-center gap-2 py-2.5 text-xs font-bold text-white bg-indigo-600 rounded-xl"
-            >
-              <PlusCircle className="w-4 h-4" /> Create New Bill
-            </button>
-          </div>
         </div>
       )}
     </header>
   );
 }
-

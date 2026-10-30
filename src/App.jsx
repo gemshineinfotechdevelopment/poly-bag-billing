@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
-import InvoiceList from './components/InvoiceList';
-import InvoiceForm from './components/InvoiceForm';
-import InvoicePreview from './components/InvoicePreview';
-import PolyBagCalculator from './components/PolyBagCalculator';
-import CustomerManager from './components/CustomerManager';
-import CompanySettings from './components/CompanySettings';
+import Footer from './components/Footer';
+import InvoicesPage from './pages/InvoicesPage';
+import CalculatorPage from './pages/CalculatorPage';
+import CustomersPage from './pages/CustomersPage';
+import SettingsPage from './pages/SettingsPage';
 import {
   getSavedInvoices,
   saveInvoiceToStorage,
@@ -51,89 +50,48 @@ export default function App() {
     const today = new Date().toISOString().slice(0, 10);
     const due = new Date(Date.now() + 15 * 86400000).toISOString().slice(0, 10);
 
-    const isInterstate = prefilledCustomer
-      ? (company?.state || '').toLowerCase() !== (prefilledCustomer.state || '').toLowerCase()
-      : false;
-
     const newInvoice = {
       id: `INV-${Date.now()}`,
       invoiceNumber: nextInvoiceNumber,
       date: today,
       dueDate: due,
       poNumber: '',
-      poDate: '',
       transportMode: '',
-      eWayBillNo: '',
-      supplyType: isInterstate ? 'interstate' : 'intrastate',
-      paymentTerms: '15 Days Credit',
+      paymentTerms: 'Immediate',
       paymentStatus: 'pending',
       paidAmount: 0,
       customer: prefilledCustomer ? {
         name: prefilledCustomer.name,
         contactPerson: prefilledCustomer.contactPerson || '',
         phone: prefilledCustomer.phone || '',
-        email: prefilledCustomer.email || '',
         billingAddress: prefilledCustomer.billingAddress || '',
-        shippingAddress: prefilledCustomer.shippingAddress || prefilledCustomer.billingAddress || '',
-        gstin: prefilledCustomer.gstin || '',
-        state: prefilledCustomer.state || '',
-        stateCode: prefilledCustomer.stateCode || ''
+        gstin: prefilledCustomer.gstin || ''
       } : {
         name: '',
         contactPerson: '',
         phone: '',
-        email: '',
         billingAddress: '',
-        shippingAddress: '',
-        gstin: '',
-        state: company?.state || '',
-        stateCode: ''
+        gstin: ''
       },
       items: [
         {
           id: `item-${Date.now()}`,
-          description: 'LDPE Clear Poly Bag (Standard 50µ)',
-          bagType: 'plain',
-          material: 'LDPE',
-          width: 10,
-          length: 14,
-          gusset: 0,
-          flap: 0,
-          micron: 50,
-          gauge: 200,
-          color: 'Clear Natural',
-          printing: 'Plain Unprinted',
-          hsnCode: '39232100',
-          billingMode: 'kg',
-          quantity: 100,
-          calculatedPcs: 12400,
-          rate: 185,
-          gstRate: 18,
-          notes: ''
+          description: 'Poly Bags',
+          unit: 'kg',
+          quantity: 10,
+          rate: 150,
+          gstRate: 0,
+          hasAdvancedSpecs: false
         }
       ],
-      cylinderCharge: 0,
       freightCharge: 0,
-      packagingCharge: 0,
-      discountPercent: 0,
+      cylinderCharge: 0,
       discountAmount: 0,
-      notes: 'Thank you for your business. Tolerance of ±5% on weight and quantity is applicable.'
+      notes: 'Thank you for your business!'
     };
 
     setActiveInvoice(newInvoice);
-    setActiveTab('create');
-  };
-
-  // Edit existing invoice
-  const handleEditInvoice = (inv) => {
-    setActiveInvoice(inv);
-    setActiveTab('create');
-  };
-
-  // View & print invoice
-  const handleViewInvoice = (inv) => {
-    setActiveInvoice(inv);
-    setActiveTab('preview');
+    setActiveTab('invoices');
   };
 
   // Save invoice to storage
@@ -141,34 +99,7 @@ export default function App() {
     const updated = saveInvoiceToStorage(invoiceToSave);
     setInvoices(updated);
     setActiveInvoice(invoiceToSave);
-    setActiveTab('invoices');
-    showToast(`Invoice ${invoiceToSave.invoiceNumber} saved successfully!`);
-  };
-
-  // Save & immediately preview/print
-  const handleSaveAndPreview = (invoiceToSave) => {
-    const updated = saveInvoiceToStorage(invoiceToSave);
-    setInvoices(updated);
-    setActiveInvoice(invoiceToSave);
-    setActiveTab('preview');
-    showToast(`Invoice saved! Ready to print.`);
-  };
-
-  // Duplicate an invoice
-  const handleDuplicateInvoice = (invoiceToDup) => {
-    const nextNumber = generateNextInvoiceNumber(invoices);
-    const duplicated = {
-      ...invoiceToDup,
-      id: `INV-${Date.now()}`,
-      invoiceNumber: nextNumber,
-      date: new Date().toISOString().slice(0, 10),
-      dueDate: new Date(Date.now() + 15 * 86400000).toISOString().slice(0, 10),
-      paymentStatus: 'pending',
-      paidAmount: 0
-    };
-    setActiveInvoice(duplicated);
-    setActiveTab('create');
-    showToast(`Invoice duplicated as ${nextNumber}`);
+    showToast(`Invoice ${invoiceToSave.invoiceNumber} saved!`);
   };
 
   // Delete an invoice
@@ -180,7 +111,7 @@ export default function App() {
     }
   };
 
-  // Quick toggle payment status
+  // Toggle payment status
   const handleTogglePaymentStatus = (id) => {
     const inv = invoices.find(i => i.id === id);
     if (!inv) return;
@@ -188,17 +119,17 @@ export default function App() {
     const updatedInv = { ...inv, paymentStatus: nextStatus };
     const updatedList = saveInvoiceToStorage(updatedInv);
     setInvoices(updatedList);
-    showToast(`Payment marked as ${nextStatus.toUpperCase()}`);
+    showToast(`Status updated to ${nextStatus.toUpperCase()}`);
   };
 
   // Save company profile
   const handleSaveCompany = (profile) => {
     const saved = saveCompanyProfile(profile);
     setCompany(saved);
-    showToast('Company profile updated!');
+    showToast('Company profile saved!');
   };
 
-  // Customer Management handlers
+  // Customer handlers
   const handleSaveCustomer = (cust) => {
     const updated = saveCustomer(cust);
     setCustomers(updated);
@@ -213,19 +144,20 @@ export default function App() {
     }
   };
 
-  // Add item from calculator to current active invoice
+  // Add item from calculator to current invoice
   const handleAddItemFromCalculator = (item) => {
-    if (activeInvoice) {
+    const current = activeInvoice || (invoices.length > 0 ? invoices[0] : null);
+    if (current) {
       const updated = {
-        ...activeInvoice,
-        items: [...(activeInvoice.items || []), item]
+        ...current,
+        items: [...(current.items || []), item]
       };
       setActiveInvoice(updated);
       saveInvoiceToStorage(updated);
       setInvoices(getSavedInvoices());
       showToast('Item added to active invoice!');
+      setActiveTab('invoices');
     } else {
-      // Create new draft with this item
       const nextNum = generateNextInvoiceNumber(invoices);
       const newInv = {
         ...INITIAL_SAMPLE_INVOICE,
@@ -237,7 +169,8 @@ export default function App() {
       setActiveInvoice(newInv);
       saveInvoiceToStorage(newInv);
       setInvoices(getSavedInvoices());
-      showToast('Created new invoice draft with calculated item!');
+      showToast('Created new bill with calculated item!');
+      setActiveTab('invoices');
     }
   };
 
@@ -263,79 +196,65 @@ export default function App() {
     <div className="min-h-screen bg-slate-100 flex flex-col font-sans">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white text-xs font-bold py-3 px-5 rounded-xl shadow-2xl border border-slate-700 animate-bounce">
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white text-xs font-bold py-2.5 px-4 rounded-xl shadow-xl border border-slate-700 animate-bounce">
           {toastMessage}
         </div>
       )}
 
-      {/* Main Navbar */}
+      {/* Shared Navbar */}
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        onNewInvoice={() => handleStartNewInvoice()}
         invoicesCount={invoices.length}
       />
 
-      {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      {/* Main Pages */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5">
         {activeTab === 'invoices' && (
-          <InvoiceList
+          <InvoicesPage
             invoices={invoices}
-            onCreateNew={() => handleStartNewInvoice()}
-            onViewInvoice={handleViewInvoice}
-            onEditInvoice={handleEditInvoice}
-            onDuplicateInvoice={handleDuplicateInvoice}
+            company={company}
+            customers={customers}
+            activeInvoice={activeInvoice}
+            setActiveInvoice={setActiveInvoice}
+            onSaveInvoice={handleSaveInvoice}
             onDeleteInvoice={handleDeleteInvoice}
             onToggleStatus={handleTogglePaymentStatus}
             onExportData={handleExportData}
             onImportData={handleImportData}
-          />
-        )}
-
-        {activeTab === 'create' && activeInvoice && (
-          <InvoiceForm
-            initialInvoice={activeInvoice}
-            customers={customers}
-            company={company}
-            onSave={handleSaveInvoice}
-            onSaveAndPreview={handleSaveAndPreview}
-            onCancel={() => setActiveTab('invoices')}
             onAddCustomer={handleSaveCustomer}
-          />
-        )}
-
-        {activeTab === 'preview' && activeInvoice && (
-          <InvoicePreview
-            invoice={activeInvoice}
-            company={company}
-            onBack={() => setActiveTab('invoices')}
-            onEdit={handleEditInvoice}
-            onDuplicate={handleDuplicateInvoice}
+            generateNextInvoiceNumber={generateNextInvoiceNumber}
           />
         )}
 
         {activeTab === 'calculator' && (
-          <PolyBagCalculator
+          <CalculatorPage
             onAddToInvoice={handleAddItemFromCalculator}
           />
         )}
 
         {activeTab === 'customers' && (
-          <CustomerManager
+          <CustomersPage
             customers={customers}
             onSaveCustomer={handleSaveCustomer}
             onDeleteCustomer={handleDeleteCustomer}
-            onSelectCustomerForNewInvoice={(cust) => handleStartNewInvoice(cust)}
+            onSelectCustomerForNewInvoice={(cust) => {
+              handleStartNewInvoice(cust);
+              setActiveTab('invoices');
+            }}
           />
         )}
 
         {activeTab === 'settings' && (
-          <CompanySettings
+          <SettingsPage
             company={company}
             onSaveCompany={handleSaveCompany}
           />
         )}
       </main>
+
+      {/* Shared Footer */}
+      <Footer />
     </div>
   );
 }

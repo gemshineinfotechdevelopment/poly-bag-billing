@@ -113,12 +113,12 @@ export function calculateItemRow(item) {
   const qty = parseFloat(item.quantity) || 0;
   const rate = parseFloat(item.rate) || 0;
   const gstRate = parseFloat(item.gstRate) || 0;
+  const unit = item.unit || item.billingMode || 'pcs';
 
   let baseAmount = 0;
-  if (item.billingMode === '1000pcs') {
+  if (unit === '1000pcs') {
     baseAmount = (qty / 1000) * rate;
   } else {
-    // 'kg' or 'pcs'
     baseAmount = qty * rate;
   }
 
@@ -151,13 +151,12 @@ export function calculateInvoiceTotals(invoice) {
     itemsBaseTotal += row.baseAmount;
     itemsTaxTotal += row.taxAmount;
 
-    // Accumulate total weight & bag pieces
-    if (item.billingMode === 'kg') {
+    const unit = item.unit || item.billingMode || 'pcs';
+    if (unit === 'kg') {
       totalWeightKg += parseFloat(item.quantity) || 0;
       totalBagsCount += parseFloat(item.calculatedPcs) || 0;
-    } else if (item.billingMode === '1000pcs' || item.billingMode === 'pcs') {
-      const pcs = parseFloat(item.quantity) || 0;
-      totalBagsCount += pcs;
+    } else {
+      totalBagsCount += parseFloat(item.quantity) || 0;
       totalWeightKg += parseFloat(item.calculatedWeightKg) || 0;
     }
 
@@ -176,9 +175,8 @@ export function calculateInvoiceTotals(invoice) {
   // Additional taxable charges
   const additionalCharges = cylinderCharge + freightCharge + packagingCharge;
   
-  // Extra charges standard GST (default 18%)
-  const extraChargesGstRate = 18;
-  const additionalChargesTax = (additionalCharges * extraChargesGstRate) / 100;
+  // Extra charges standard GST (default 18% if tax applies, or 0 if exempt)
+  const additionalChargesTax = itemsTaxTotal > 0 ? (additionalCharges * 0.18) : 0;
 
   // Discounts
   let discountAmount = parseFloat(invoice.discountAmount) || 0;
@@ -222,4 +220,3 @@ export function calculateInvoiceTotals(invoice) {
     taxBreakdown
   };
 }
-
