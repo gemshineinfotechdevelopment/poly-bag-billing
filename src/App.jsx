@@ -4,7 +4,7 @@ import DashboardPage from './pages/DashboardPage';
 import InvoicesPage from './pages/InvoicesPage';
 import PurchasesPage from './pages/PurchasesPage';
 import ProductsPage from './pages/ProductsPage';
-import CalculatorPage from './pages/CalculatorPage';
+import ReportsPage from './pages/ReportsPage';
 import CustomersPage from './pages/CustomersPage';
 import SettingsPage from './pages/SettingsPage';
 import {
@@ -28,6 +28,25 @@ import {
   importDataFromJson
 } from './utils/storage';
 import { INITIAL_SAMPLE_INVOICE } from './constants/defaults';
+import {
+  getBackendStatus,
+  fetchInvoicesApi,
+  saveInvoiceApi,
+  deleteInvoiceApi,
+  fetchProductsApi,
+  saveProductApi,
+  deleteProductApi,
+  adjustStockApi,
+  fetchPurchasesApi,
+  savePurchaseApi,
+  deletePurchaseApi,
+  fetchCustomersApi,
+  saveCustomerApi,
+  deleteCustomerApi,
+  fetchCompanyApi,
+  saveCompanyApi,
+  seedLocalDataToAtlas
+} from './utils/api';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -39,8 +58,9 @@ export default function App() {
   const [activeInvoice, setActiveInvoice] = useState(null);
   const [toastMessage, setToastMessage] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isMongoConnected, setIsMongoConnected] = useState(false);
 
-  // Initialize data on mount
+  // Initialize data on mount: loads locally first, then syncs with MongoDB Atlas if connected
   useEffect(() => {
     const loadedInvoices = getSavedInvoices();
     const loadedCompany = getCompanyProfile();
@@ -53,6 +73,41 @@ export default function App() {
     setCustomers(loadedCustomers);
     setProducts(loadedProducts);
     setPurchases(loadedPurchases);
+
+    // Sync with MongoDB Atlas if server is running and connected
+    getBackendStatus().then(async (status) => {
+      if (status && status.connected) {
+        setIsMongoConnected(true);
+        try {
+          const [dbInvoices, dbProducts, dbPurchases, dbCustomers, dbCompany] = await Promise.all([
+            fetchInvoicesApi(),
+            fetchProductsApi(),
+            fetchPurchasesApi(),
+            fetchCustomersApi(),
+            fetchCompanyApi()
+          ]);
+
+          // Always set state directly from MongoDB Atlas when connected
+          if (Array.isArray(dbInvoices) && dbInvoices.length > 0) {
+            setInvoices(dbInvoices);
+          } else if (loadedInvoices.length > 0) {
+            // First time seed if Atlas is empty
+            await seedLocalDataToAtlas({ invoices: loadedInvoices, products: loadedProducts, purchases: loadedPurchases, customers: loadedCustomers, company: loadedCompany });
+            const fresh = await fetchInvoicesApi();
+            if (Array.isArray(fresh) && fresh.length > 0) setInvoices(fresh);
+          }
+
+          if (Array.isArray(dbProducts) && dbProducts.length > 0) setProducts(dbProducts);
+          if (Array.isArray(dbPurchases) && dbPurchases.length > 0) setPurchases(dbPurchases);
+          if (Array.isArray(dbCustomers) && dbCustomers.length > 0) setCustomers(dbCustomers);
+          if (dbCompany) setCompany(dbCompany);
+        } catch (err) {
+          console.warn('Atlas sync error, running in local mode:', err.message);
+        }
+      } else {
+        setIsMongoConnected(false);
+      }
+    });
   }, []);
 
   const showToast = (msg) => {
@@ -163,11 +218,11 @@ export default function App() {
     showToast(`Started new bill for ${product.name}!`);
   };
 
-  // Save invoice to storage and adjust live product stock
-  const handleSaveInvoice = (invoiceToSave) => {
+  // Save invoice to MongoDB Atlas database & local cache
+  const handleSaveInvoice = async (invoiceToSave) => {
     const isNew = !invoices.some(i => i.id === invoiceToSave.id);
     
-    // If it's a new invoice, deduct billed quantities from matching catalog products
+    // Deduct stock locally as immediate feedback
     if (isNew && invoiceToSave.items && invoiceToSave.items.length > 0) {
       invoiceToSave.items.forEach(item => {
         const qty = parseFloat(item.quantity) || 0;
@@ -184,87 +239,178 @@ export default function App() {
       setProducts(getProductsList());
     }
 
-    const updated = saveInvoiceToStorage(invoiceToSave);
-    setInvoices(updated);
+    // Always mirror to localStorage
+    saveInvoiceToStorage(invoiceToSave);
     setActiveInvoice(invoiceToSave);
-    showToast(`Invoice ${invoiceToSave.invoiceNumber} saved!`);
-  };
 
-  // Delete an invoice
-  const handleDeleteInvoice = (id) => {
-    if (confirm('Are you sure you want to delete this invoice? This cannot be undone.')) {
-      const updated = deleteInvoiceFromStorage(id);
-      setInvoices(updated);
-      showToast('Invoice deleted.');
+    // Save directly to MongoDB Atlas & re-fetch from database
+    try {
+      await saveInvoiceApi(invoiceToSave);
+      const [freshInvoices, freshProducts] = await Promise.all([
+        fetchInvoicesApi(),
+        fetchProductsApi()
+      ]);
+      if (Array.isArray(freshInvoices) && freshInvoices.length > 0) setInvoices(freshInvoices);
+      if (Array.isArray(freshProducts) && freshProducts.length > 0) setProducts(freshProducts);
+      showToast(`Invoice ${invoiceToSave.invoiceNumber} saved to database!`);
+    } catch (err) {
+      console.warn('Saved locally (offline fallback):', err.message);
+      setInvoices(getSavedInvoices());
+      showToast(`Invoice ${invoiceToSave.invoiceNumber} saved (local mode)!`);
     }
   };
 
-  // Toggle payment status
-  const handleTogglePaymentStatus = (id) => {
+  // Delete an invoice from database
+  const handleDeleteInvoice = async (id) => {
+    if (confirm('Are you sure you want to delete this invoice? This cannot be undone.')) {
+      deleteInvoiceFromStorage(id);
+      try {
+        await deleteInvoiceApi(id);
+        const fresh = await fetchInvoicesApi();
+        if (Array.isArray(fresh)) setInvoices(fresh);
+        showToast('Invoice deleted from database.');
+      } catch (err) {
+        setInvoices(getSavedInvoices());
+        showToast('Invoice deleted.');
+      }
+    }
+  };
+
+  // Toggle payment status in database
+  const handleTogglePaymentStatus = async (id) => {
     const inv = invoices.find(i => i.id === id);
     if (!inv) return;
     const nextStatus = inv.paymentStatus === 'pending' ? 'partial' : inv.paymentStatus === 'partial' ? 'paid' : 'pending';
     const updatedInv = { ...inv, paymentStatus: nextStatus };
-    const updatedList = saveInvoiceToStorage(updatedInv);
-    setInvoices(updatedList);
-    showToast(`Status updated to ${nextStatus.toUpperCase()}`);
+    saveInvoiceToStorage(updatedInv);
+    try {
+      await saveInvoiceApi(updatedInv);
+      const fresh = await fetchInvoicesApi();
+      if (Array.isArray(fresh)) setInvoices(fresh);
+      showToast(`Status updated to ${nextStatus.toUpperCase()} in database`);
+    } catch (err) {
+      setInvoices(getSavedInvoices());
+      showToast(`Status updated to ${nextStatus.toUpperCase()}`);
+    }
   };
 
-  // Save company profile
-  const handleSaveCompany = (profile) => {
-    const saved = saveCompanyProfile(profile);
-    setCompany(saved);
-    showToast('Company profile saved!');
+  // Save company profile in database
+  const handleSaveCompany = async (profile) => {
+    saveCompanyProfile(profile);
+    try {
+      await saveCompanyApi(profile);
+      const fresh = await fetchCompanyApi();
+      if (fresh) setCompany(fresh);
+      showToast('Company profile saved to database!');
+    } catch (err) {
+      setCompany(getCompanyProfile());
+      showToast('Company profile saved!');
+    }
   };
 
-  // Customer handlers
-  const handleSaveCustomer = (cust) => {
-    const updated = saveCustomer(cust);
-    setCustomers(updated);
-    showToast('Customer saved to directory!');
+  // Customer handlers (database-driven)
+  const handleSaveCustomer = async (cust) => {
+    saveCustomer(cust);
+    try {
+      await saveCustomerApi(cust);
+      const fresh = await fetchCustomersApi();
+      if (Array.isArray(fresh)) setCustomers(fresh);
+      showToast('Customer saved to database!');
+    } catch (err) {
+      setCustomers(getCustomersList());
+      showToast('Customer saved to directory!');
+    }
   };
 
-  const handleDeleteCustomer = (id) => {
+  const handleDeleteCustomer = async (id) => {
     if (confirm('Delete this customer from directory?')) {
-      const updated = deleteCustomer(id);
-      setCustomers(updated);
-      showToast('Customer removed.');
+      deleteCustomer(id);
+      try {
+        await deleteCustomerApi(id);
+        const fresh = await fetchCustomersApi();
+        if (Array.isArray(fresh)) setCustomers(fresh);
+        showToast('Customer removed from database.');
+      } catch (err) {
+        setCustomers(getCustomersList());
+        showToast('Customer removed.');
+      }
     }
   };
 
-  // Product Catalog & Stock handlers
-  const handleSaveProduct = (prod) => {
-    const updated = saveProduct(prod);
-    setProducts(updated);
-    showToast(`Product "${prod.name}" saved!`);
+  // Product Catalog & Stock handlers (database-driven)
+  const handleSaveProduct = async (prod) => {
+    saveProduct(prod);
+    try {
+      await saveProductApi(prod);
+      const fresh = await fetchProductsApi();
+      if (Array.isArray(fresh)) setProducts(fresh);
+      showToast(`Product "${prod.name}" saved to database!`);
+    } catch (err) {
+      setProducts(getProductsList());
+      showToast(`Product "${prod.name}" saved!`);
+    }
   };
 
-  const handleDeleteProduct = (id) => {
+  const handleDeleteProduct = async (id) => {
     if (confirm('Delete this product from catalog?')) {
-      const updated = deleteProduct(id);
-      setProducts(updated);
-      showToast('Product removed from catalog.');
+      deleteProduct(id);
+      try {
+        await deleteProductApi(id);
+        const fresh = await fetchProductsApi();
+        if (Array.isArray(fresh)) setProducts(fresh);
+        showToast('Product removed from database.');
+      } catch (err) {
+        setProducts(getProductsList());
+        showToast('Product removed from catalog.');
+      }
     }
   };
 
-  const handleAdjustStock = (id, delta) => {
-    const updated = adjustProductStock(id, delta);
-    setProducts(updated);
-    showToast('Stock quantity updated!');
+  const handleAdjustStock = async (id, delta) => {
+    adjustProductStock(id, delta);
+    try {
+      await adjustStockApi(id, delta);
+      const fresh = await fetchProductsApi();
+      if (Array.isArray(fresh)) setProducts(fresh);
+      showToast('Stock quantity updated in database!');
+    } catch (err) {
+      setProducts(getProductsList());
+      showToast('Stock quantity updated!');
+    }
   };
 
-  // Purchases (Stock Inward) handlers
-  const handleSavePurchase = (purchase) => {
-    const updated = savePurchase(purchase);
-    setPurchases(updated);
-    setProducts(getProductsList()); // refresh inventory because incoming stock increased
-    showToast(`Purchase recorded and stock updated!`);
+  // Purchases (Stock Inward) handlers (database-driven)
+  const handleSavePurchase = async (purchase) => {
+    savePurchase(purchase);
+    try {
+      await savePurchaseApi(purchase);
+      const [freshPurchases, freshProducts] = await Promise.all([
+        fetchPurchasesApi(),
+        fetchProductsApi()
+      ]);
+      if (Array.isArray(freshPurchases)) setPurchases(freshPurchases);
+      if (Array.isArray(freshProducts)) setProducts(freshProducts);
+      showToast(`Purchase recorded and stock updated in database!`);
+    } catch (err) {
+      setPurchases(getPurchasesList());
+      setProducts(getProductsList());
+      showToast(`Purchase recorded and stock updated!`);
+    }
   };
 
-  const handleDeletePurchase = (id) => {
-    const updated = deletePurchase(id);
-    setPurchases(updated);
-    showToast('Purchase record removed.');
+  const handleDeletePurchase = async (id) => {
+    if (confirm('Delete this purchase record?')) {
+      deletePurchase(id);
+      try {
+        await deletePurchaseApi(id);
+        const fresh = await fetchPurchasesApi();
+        if (Array.isArray(fresh)) setPurchases(fresh);
+        showToast('Purchase record removed from database.');
+      } catch (err) {
+        setPurchases(getPurchasesList());
+        showToast('Purchase record removed.');
+      }
+    }
   };
 
   // View invoice directly from Dashboard
@@ -396,9 +542,12 @@ export default function App() {
             />
           )}
 
-          {activeTab === 'calculator' && (
-            <CalculatorPage
-              onAddToInvoice={handleAddItemFromCalculator}
+          {activeTab === 'reports' && (
+            <ReportsPage
+              invoices={invoices}
+              purchases={purchases}
+              products={products}
+              customers={customers}
             />
           )}
 

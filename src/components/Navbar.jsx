@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Package, FileText, Calculator, Users, Settings, Menu, X, ShieldCheck, Boxes, LayoutDashboard, Truck } from 'lucide-react';
+import { Package, FileText, BarChart3, Users, Settings, Menu, X, ShieldCheck, Boxes, LayoutDashboard, Truck } from 'lucide-react';
 
 export default function Navbar({
   activeTab,
@@ -59,11 +59,10 @@ export default function Navbar({
       icon: Users
     },
     {
-      id: 'calculator',
-      label: 'Bag Calculator',
-      description: 'Weight & cost estimator',
-      icon: Calculator,
-      highlight: true
+      id: 'reports',
+      label: 'Reports',
+      description: 'P&L, sales & GST analytics',
+      icon: BarChart3
     },
     {
       id: 'settings',
@@ -84,8 +83,8 @@ export default function Navbar({
   return (
     <>
       {/* Top Header Bar with Hamburger Button */}
-      <header className="no-print bg-white border-b border-slate-200 sticky top-0 z-40 px-4 sm:px-6 py-2.5 flex items-center justify-between shadow-2xs">
-        <div className="flex items-center gap-3">
+      <header className="no-print bg-white border-b border-slate-200 sticky top-0 z-40 px-4 sm:px-6 h-[60px] flex items-center justify-between shadow-2xs">
+        <div className="flex items-center gap-4 sm:gap-5">
           {/* Hamburger Menu Toggle Button */}
           <button
             onClick={() => setIsOpen(!isOpen)}
@@ -98,16 +97,16 @@ export default function Navbar({
 
           {/* Brand Logo & Name */}
           <div
-            className="flex items-center gap-2.5 cursor-pointer"
+            className="flex items-center gap-3 cursor-pointer"
             onClick={() => handleSelectTab('dashboard')}
           >
             <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-600 to-indigo-800 text-white flex items-center justify-center shadow-xs shrink-0">
               <Package className="w-4 h-4" />
             </div>
             <div>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 <span className="font-extrabold text-sm text-slate-900 tracking-tight">PolyPack</span>
-                <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 uppercase">
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 uppercase">
                   Billing
                 </span>
               </div>
@@ -118,13 +117,13 @@ export default function Navbar({
 
       {/* Side Navigation Panel (Push sidebar: side-by-side with content, never covers it!) */}
       <aside
-        className={`no-print fixed top-[49px] left-0 bottom-0 w-64 bg-white border-r border-slate-200 z-30 shadow-xs transition-transform duration-300 ease-in-out flex flex-col justify-between p-4 ${
+        className={`no-print fixed top-[60px] left-0 bottom-0 w-64 bg-white border-r border-slate-200 z-30 shadow-xs transition-transform duration-300 ease-in-out flex flex-col justify-between p-4 pt-5 sm:pt-6 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="overflow-y-auto pr-1 flex-1">
           {/* Vertical Nav Links in Ordered Sequence */}
-          <nav className="space-y-1.5">
+          <nav className="space-y-2">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -133,13 +132,13 @@ export default function Navbar({
                 <button
                   key={item.id}
                   onClick={() => handleSelectTab(item.id)}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all group cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all group cursor-pointer ${
                     isActive
                       ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-200 font-bold'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5 text-left">
+                  <div className="flex items-center gap-3 text-left">
                     <Icon
                       className={`w-4 h-4 shrink-0 transition-colors ${
                         isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-700'
@@ -148,7 +147,7 @@ export default function Navbar({
                     <div>
                       <div className="leading-tight">{item.label}</div>
                       <div
-                        className={`text-[10px] font-normal leading-tight mt-0.5 ${
+                        className={`text-[10px] font-normal leading-tight mt-1 ${
                           isActive ? 'text-indigo-100' : 'text-slate-400'
                         }`}
                       >

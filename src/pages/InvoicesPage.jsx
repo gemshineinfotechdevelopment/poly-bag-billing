@@ -459,33 +459,33 @@ function InvoiceFormView({
   return (
     <div className="max-w-5xl mx-auto pb-16">
       {/* Top Header */}
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-4 sm:p-5 text-white shadow-md border border-slate-800 mb-5 flex flex-wrap items-center justify-between gap-3 sticky top-4 z-20 backdrop-blur-md">
-        <div className="flex items-center gap-3">
+      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-5 sm:p-6 text-white shadow-md border border-slate-800 mb-6 flex flex-wrap items-center justify-between gap-4 sticky top-4 z-20 backdrop-blur-md">
+        <div className="flex items-center gap-4">
           <button
             type="button"
             onClick={onCancel}
-            className="p-2 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl transition-colors cursor-pointer border border-slate-700"
+            className="p-2.5 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl transition-colors cursor-pointer border border-slate-700"
             title="Go back"
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
+            <div className="flex items-center gap-3 mb-1.5">
+              <span className="text-[10px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
                 Bill Editor
               </span>
             </div>
-            <h2 className="text-base sm:text-lg font-black text-white mt-1">
+            <h2 className="text-base sm:text-xl font-black text-white mt-1">
               {formData.id ? `Edit Invoice (${formData.invoiceNumber})` : 'New Invoice'}
             </h2>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3 sm:gap-3.5">
           <button
             type="button"
             onClick={() => handleSubmit('save')}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer"
           >
             <Save className="w-3.5 h-3.5" /> Save
           </button>
@@ -493,7 +493,7 @@ function InvoiceFormView({
           <button
             type="button"
             onClick={() => handleSubmit('saveAndPreview')}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
           >
             <Eye className="w-3.5 h-3.5" /> View & Print
           </button>
@@ -1287,43 +1287,43 @@ export default function InvoicesPage({
 
   // 3. RENDER INVOICES LIST
   return (
-    <div className="space-y-5 pb-16">
+    <div className="space-y-8 pb-16">
       {/* 1. Top Header Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-5 sm:p-6 text-white shadow-md border border-slate-800 flex flex-wrap items-center justify-between gap-4">
+      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-6 sm:p-7 text-white shadow-md border border-slate-800 flex flex-wrap items-center justify-between gap-6">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
+          <div className="flex items-center gap-3 mb-2.5">
+            <span className="text-[10px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
               Sales & Invoicing
             </span>
             <span className="text-xs text-slate-400 font-medium">
               {invoices.length} total bills
             </span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-black mt-1.5 tracking-tight text-white">
+          <h1 className="text-xl sm:text-2xl font-black mt-2 mb-1.5 tracking-tight text-white">
             Selling & Bills
           </h1>
-          <p className="text-xs text-slate-300 mt-0.5">
+          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
             Create, edit, view, and print customer bills & track receivables
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-3 sm:gap-3.5">
           <button
             onClick={onExportData}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer"
             title="Download backup"
           >
             <Download className="w-3.5 h-3.5" /> Backup
           </button>
 
-          <label className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer">
+          <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer">
             <Upload className="w-3.5 h-3.5" /> Restore
             <input type="file" accept=".json" onChange={handleImportFile} className="hidden" />
           </label>
 
           <button
             onClick={handleStartNew}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" /> New Bill
           </button>

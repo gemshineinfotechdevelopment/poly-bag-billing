@@ -99,53 +99,53 @@ export default function DashboardPage({
   const recentInvoices = [...invoices].slice(0, 5);
 
   return (
-    <div className="space-y-6 pb-16">
+    <div className="space-y-8 pb-16">
       {/* 1. Welcome & Business Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-5 sm:p-6 text-white shadow-md border border-slate-800 flex flex-wrap items-center justify-between gap-4">
+      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-6 sm:p-7 text-white shadow-md border border-slate-800 flex flex-wrap items-center justify-between gap-6">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
+          <div className="flex items-center gap-3 mb-2.5">
+            <span className="text-[10px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
               Business Overview
             </span>
             <span className="text-xs text-slate-400 font-medium">
               {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' })}
             </span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-black mt-1.5 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-black mt-2 mb-1.5 tracking-tight text-white">
             {company?.name || 'PolyPack Billing & Stock'}
           </h1>
-          <p className="text-xs text-slate-300 mt-0.5">
+          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
             Poly Bag Manufacturing, Selling & Inventory Dashboard
           </p>
         </div>
 
         {/* Quick Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-3 sm:gap-3.5">
           <button
             onClick={onStartNewInvoice}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" /> New Bill
           </button>
 
           <button
             onClick={() => onNavigate('purchases')}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer"
           >
             <Truck className="w-4 h-4 text-emerald-400" /> Record Purchase
           </button>
 
           <button
-            onClick={() => onNavigate('calculator')}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer"
+            onClick={() => onNavigate('reports')}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer"
           >
-            <Calculator className="w-4 h-4 text-amber-400" /> Bag Calc
+            <BarChart3 className="w-4 h-4 text-indigo-400" /> Reports
           </button>
         </div>
       </div>
 
       {/* 2. Key Business Metrics */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-5">
         {/* Total Sales (Revenue) */}
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs hover:border-slate-300 transition-all">
           <div className="flex items-center justify-between text-slate-500 mb-1">
@@ -255,7 +255,7 @@ export default function DashboardPage({
           <span className="text-[11px] text-slate-400 font-medium">4 Core Business Modules</span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
           {/* Card 1: Selling & Bills */}
           <div
             onClick={() => onNavigate('invoices')}
