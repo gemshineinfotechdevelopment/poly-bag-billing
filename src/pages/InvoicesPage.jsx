@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   PlusCircle, Search, Eye, Edit3, Copy, Trash2, Printer, ArrowLeft,
-  CheckCircle, Clock, AlertCircle, Download, Upload, Package, Sliders,
+  CheckCircle, Clock, AlertCircle, AlertTriangle, Download, Upload, Package, Sliders,
   ChevronDown, ChevronUp, Scale, Save, IndianRupee, Weight
 } from 'lucide-react';
 import {
@@ -9,12 +9,18 @@ import {
 } from '../utils/formatters';
 import { BAG_TYPES, MATERIALS, UNITS, COMMON_SIZES } from '../constants/defaults';
 import { calculateBagWeightGrams, micronToGauge, gaugeToMicron } from '../utils/polyBagCalc';
+import { extractInvoiceNumberInt, generateNextInvoiceNumber as getNextNum } from '../utils/storage';
 
 // ==========================================
 // SUB-COMPONENT: Single Poly Bag Row
 // ==========================================
-function PolyBagRow({ item, index, onChange, onRemove, onDuplicate }) {
+function PolyBagRow({ item, index, onChange, onRemove, onDuplicate, products = [] }) {
   const [showSpecs, setShowSpecs] = useState(Boolean(item.hasAdvancedSpecs || (item.width && item.length)));
+
+  const matchedProduct = products.find(p =>
+    (item.productId && p.id === item.productId) ||
+    (p.name && item.description && p.name.trim().toLowerCase() === item.description.trim().toLowerCase())
+  );
 
   const bagWeightGrams = calculateBagWeightGrams({
     width: item.width || 0,
@@ -48,6 +54,23 @@ function PolyBagRow({ item, index, onChange, onRemove, onDuplicate }) {
     onChange(updated);
   };
 
+  const handleProductSelectByName = (name) => {
+    const found = products.find(p => p.name.toLowerCase() === name.toLowerCase());
+    if (found) {
+      const updated = {
+        ...item,
+        description: found.name,
+        productId: found.id,
+        unit: found.unit || item.unit || 'kg',
+        billingMode: found.unit || item.unit || 'kg',
+        rate: found.sellingPrice ?? item.rate ?? 0
+      };
+      onChange(updated);
+    } else {
+      handleChange('description', name);
+    }
+  };
+
   const qty = parseFloat(item.quantity) || 0;
   const rate = parseFloat(item.rate) || 0;
   const unit = item.unit || item.billingMode || 'pcs';
@@ -59,18 +82,53 @@ function PolyBagRow({ item, index, onChange, onRemove, onDuplicate }) {
     <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xs hover:border-slate-300 transition-all mb-3">
       <div className="grid grid-cols-12 gap-2.5 items-center">
         {/* Index & Description */}
-        <div className="col-span-12 sm:col-span-5 flex items-center gap-2">
-          <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-600 text-[11px] font-bold flex items-center justify-center shrink-0">
+        <div className="col-span-12 sm:col-span-5 flex items-start gap-2">
+          <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-600 text-[11px] font-bold flex items-center justify-center shrink-0 mt-1">
             {index + 1}
           </span>
           <div className="flex-1">
             <input
               type="text"
+              list={`catalog-options-${index}`}
               value={item.description || ''}
-              onChange={(e) => handleChange('description', e.target.value)}
-              placeholder="Product Name (e.g. Poly Bags, Plastic Covers)"
+              onChange={(e) => handleProductSelectByName(e.target.value)}
+              placeholder="Product Name or select from catalog"
               className="w-full px-2.5 py-1.5 text-xs font-semibold text-slate-800 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
             />
+            {products && products.length > 0 && (
+              <datalist id={`catalog-options-${index}`}>
+                {products.map(p => (
+                  <option key={p.id} value={p.name}>
+                    Stock: {p.currentStock} {p.unit} · ₹{p.sellingPrice}/{p.unit}
+                  </option>
+                ))}
+              </datalist>
+            )}
+
+            {/* Live Stock Level Indicator */}
+            {matchedProduct && (
+              <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[10px]">
+                {parseFloat(matchedProduct.currentStock) <= 0 ? (
+                  <span className="px-1.5 py-0.2 rounded bg-rose-50 text-rose-700 font-bold border border-rose-200 inline-flex items-center gap-0.5">
+                    <AlertTriangle className="w-2.5 h-2.5" /> Out of Stock (0 {matchedProduct.unit})
+                  </span>
+                ) : parseFloat(matchedProduct.currentStock) <= (parseFloat(matchedProduct.minStockAlert) || 10) ? (
+                  <span className="px-1.5 py-0.2 rounded bg-amber-50 text-amber-800 font-bold border border-amber-200 inline-flex items-center gap-0.5">
+                    <AlertTriangle className="w-2.5 h-2.5" /> Low Stock: {matchedProduct.currentStock} {matchedProduct.unit} left
+                  </span>
+                ) : (
+                  <span className="px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200 inline-flex items-center gap-0.5">
+                    <CheckCircle className="w-2.5 h-2.5" /> In Stock: {matchedProduct.currentStock} {matchedProduct.unit}
+                  </span>
+                )}
+
+                {parseFloat(item.quantity) > parseFloat(matchedProduct.currentStock) && parseFloat(matchedProduct.currentStock) > 0 && (
+                  <span className="text-amber-700 font-medium">
+                    (Exceeds stock by {(parseFloat(item.quantity) - parseFloat(matchedProduct.currentStock)).toFixed(1)} {matchedProduct.unit})
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -266,7 +324,15 @@ function PolyBagRow({ item, index, onChange, onRemove, onDuplicate }) {
 // ==========================================
 // SUB-COMPONENT: Invoice Form Editor View
 // ==========================================
-function InvoiceFormView({ invoice, customers, onSave, onSaveAndPreview, onCancel, onAddCustomer }) {
+function InvoiceFormView({
+  invoice,
+  customers,
+  products = [],
+  onSave,
+  onSaveAndPreview,
+  onCancel,
+  onAddCustomer
+}) {
   const [formData, setFormData] = useState(invoice);
   const [showMoreOptions, setShowMoreOptions] = useState(
     Boolean(formData.poNumber || formData.transportMode || formData.freightCharge || formData.cylinderCharge)
@@ -307,6 +373,24 @@ function InvoiceFormView({ invoice, customers, onSave, onSaveAndPreview, onCance
     const updatedItems = [...formData.items];
     updatedItems[index] = updatedItem;
     setFormData(prev => ({ ...prev, items: updatedItems }));
+  };
+
+  const handleAddItemFromCatalog = (product) => {
+    const newItem = {
+      id: `item-${Date.now()}`,
+      productId: product.id,
+      description: product.name,
+      unit: product.unit || 'kg',
+      quantity: 10,
+      rate: product.sellingPrice || 0,
+      gstRate: 0,
+      hasAdvancedSpecs: false
+    };
+
+    setFormData(prev => ({
+      ...prev,
+      items: [...(prev.items || []), newItem]
+    }));
   };
 
   const handleAddItem = (preset = null) => {
@@ -375,18 +459,23 @@ function InvoiceFormView({ invoice, customers, onSave, onSaveAndPreview, onCance
   return (
     <div className="max-w-5xl mx-auto pb-16">
       {/* Top Header */}
-      <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs mb-5 flex flex-wrap items-center justify-between gap-3 sticky top-4 z-20 backdrop-blur-md bg-white/95">
-        <div className="flex items-center gap-2">
+      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-4 sm:p-5 text-white shadow-md border border-slate-800 mb-5 flex flex-wrap items-center justify-between gap-3 sticky top-4 z-20 backdrop-blur-md">
+        <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={onCancel}
-            className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-600 transition-colors"
+            className="p-2 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl transition-colors cursor-pointer border border-slate-700"
             title="Go back"
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div>
-            <h2 className="text-base font-bold text-slate-900">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
+                Bill Editor
+              </span>
+            </div>
+            <h2 className="text-base sm:text-lg font-black text-white mt-1">
               {formData.id ? `Edit Invoice (${formData.invoiceNumber})` : 'New Invoice'}
             </h2>
           </div>
@@ -396,7 +485,7 @@ function InvoiceFormView({ invoice, customers, onSave, onSaveAndPreview, onCance
           <button
             type="button"
             onClick={() => handleSubmit('save')}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer"
           >
             <Save className="w-3.5 h-3.5" /> Save
           </button>
@@ -404,7 +493,7 @@ function InvoiceFormView({ invoice, customers, onSave, onSaveAndPreview, onCance
           <button
             type="button"
             onClick={() => handleSubmit('saveAndPreview')}
-            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-xs transition-colors"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
           >
             <Eye className="w-3.5 h-3.5" /> View & Print
           </button>
@@ -517,18 +606,39 @@ function InvoiceFormView({ invoice, customers, onSave, onSaveAndPreview, onCance
 
           {/* Items List */}
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
                 Items ({formData.items?.length || 0})
               </h3>
 
               <div className="flex items-center gap-2">
+                {products && products.length > 0 && (
+                  <select
+                    onChange={(e) => {
+                      const prodId = e.target.value;
+                      if (!prodId) return;
+                      const prod = products.find(p => p.id === prodId);
+                      if (prod) handleAddItemFromCatalog(prod);
+                      e.target.value = '';
+                    }}
+                    defaultValue=""
+                    className="text-[11px] px-2.5 py-1 border border-indigo-200 bg-indigo-50/70 hover:bg-indigo-50 text-indigo-900 rounded-lg font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                  >
+                    <option value="" disabled>+ Pick from Products Catalog...</option>
+                    {products.map(p => (
+                      <option key={p.id} value={p.id}>
+                        {p.name} (Stock: {p.currentStock} {p.unit} · ₹{p.sellingPrice})
+                      </option>
+                    ))}
+                  </select>
+                )}
+
                 <button
                   type="button"
                   onClick={() => handleAddItem()}
                   className="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-2xs transition-colors"
                 >
-                  <PlusCircle className="w-3.5 h-3.5" /> Add Item
+                  <PlusCircle className="w-3.5 h-3.5" /> Add Blank Row
                 </button>
               </div>
             </div>
@@ -538,6 +648,7 @@ function InvoiceFormView({ invoice, customers, onSave, onSaveAndPreview, onCance
                 key={item.id || index}
                 item={item}
                 index={index}
+                products={products}
                 onChange={(updated) => handleItemChange(index, updated)}
                 onRemove={() => handleRemoveItem(index)}
                 onDuplicate={() => handleDuplicateItem(index)}
@@ -722,19 +833,24 @@ function InvoicePrintView({ invoice, company, onBack, onEdit, onDuplicate }) {
   return (
     <div className="max-w-3xl mx-auto pb-16">
       {/* Top Action Bar (Hidden on Print) */}
-      <div className="no-print bg-white border border-slate-200 rounded-xl p-3 mb-6 shadow-xs flex flex-wrap items-center justify-between gap-3">
-        <button
-          onClick={onBack}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" /> Back to Invoices
-        </button>
+      <div className="no-print bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-4 sm:p-5 text-white shadow-md border border-slate-800 mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onBack}
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl transition-colors cursor-pointer"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back to Invoices
+          </button>
+          <span className="text-xs font-mono font-bold text-indigo-200 bg-indigo-950/60 px-2.5 py-1 rounded-lg border border-indigo-500/30">
+            {invoice.invoiceNumber}
+          </span>
+        </div>
 
         <div className="flex items-center gap-2">
           {onEdit && (
             <button
               onClick={() => onEdit(invoice)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl transition-colors cursor-pointer"
             >
               <Edit3 className="w-3.5 h-3.5" /> Edit Bill
             </button>
@@ -743,7 +859,7 @@ function InvoicePrintView({ invoice, company, onBack, onEdit, onDuplicate }) {
           {onDuplicate && (
             <button
               onClick={() => onDuplicate(invoice)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl transition-colors cursor-pointer"
             >
               <Copy className="w-3.5 h-3.5" /> Duplicate
             </button>
@@ -751,7 +867,7 @@ function InvoicePrintView({ invoice, company, onBack, onEdit, onDuplicate }) {
 
           <button
             onClick={handlePrint}
-            className="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-xs transition-colors"
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-sm transition-all hover:scale-[1.02] rounded-xl cursor-pointer"
           >
             <Printer className="w-4 h-4" /> Print / Save PDF
           </button>
@@ -996,6 +1112,7 @@ export default function InvoicesPage({
   invoices = [],
   company,
   customers = [],
+  products = [],
   activeInvoice,
   setActiveInvoice,
   onSaveInvoice,
@@ -1009,6 +1126,7 @@ export default function InvoicesPage({
   const [viewMode, setViewMode] = useState('list'); // 'list' | 'form' | 'preview'
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [sortOrder, setSortOrder] = useState('asc'); // 'asc' (1001, 1002...) or 'desc' (latest first)
 
   // Quick stats calculation
   let totalRevenue = 0;
@@ -1049,8 +1167,16 @@ export default function InvoicesPage({
     return inv.paymentStatus === statusFilter;
   });
 
+  // Sort invoices in strict numerical order
+  filtered.sort((a, b) => {
+    const numA = extractInvoiceNumberInt(a.invoiceNumber);
+    const numB = extractInvoiceNumberInt(b.invoiceNumber);
+    return sortOrder === 'asc' ? numA - numB : numB - numA;
+  });
+
   const handleStartNew = () => {
-    const nextInvoiceNumber = generateNextInvoiceNumber ? generateNextInvoiceNumber(invoices) : `INV-${Date.now()}`;
+    const getNext = generateNextInvoiceNumber || getNextNum;
+    const nextInvoiceNumber = getNext(invoices);
     const today = new Date().toISOString().slice(0, 10);
     const due = new Date(Date.now() + 15 * 86400000).toISOString().slice(0, 10);
 
@@ -1097,7 +1223,8 @@ export default function InvoicesPage({
   };
 
   const handleDuplicate = (inv) => {
-    const nextNum = generateNextInvoiceNumber ? generateNextInvoiceNumber(invoices) : `INV-${Date.now()}`;
+    const getNext = generateNextInvoiceNumber || getNextNum;
+    const nextNum = getNext(invoices);
     const duplicated = {
       ...inv,
       id: `INV-${Date.now()}`,
@@ -1136,6 +1263,7 @@ export default function InvoicesPage({
       <InvoiceFormView
         invoice={activeInvoice}
         customers={customers}
+        products={products}
         onSave={handleSaveAndShowList}
         onSaveAndPreview={handleSaveAndShowPreview}
         onCancel={() => setViewMode('list')}
@@ -1157,76 +1285,53 @@ export default function InvoicesPage({
     );
   }
 
-  // 3. RENDER INVOICES LIST & DASHBOARD
+  // 3. RENDER INVOICES LIST
   return (
-    <div className="space-y-5">
-      {/* Metrics Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="p-3.5 rounded-xl border border-slate-200 bg-white shadow-2xs flex items-center justify-between">
-          <div>
-            <p className="text-[11px] font-bold text-slate-500 uppercase">Total Billed</p>
-            <h3 className="text-lg font-bold text-slate-800 mt-0.5">{formatCurrency(totalRevenue)}</h3>
-            <p className="text-[10px] text-slate-400">{invoices.length} total bills</p>
+    <div className="space-y-5 pb-16">
+      {/* 1. Top Header Banner */}
+      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-5 sm:p-6 text-white shadow-md border border-slate-800 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
+              Sales & Invoicing
+            </span>
+            <span className="text-xs text-slate-400 font-medium">
+              {invoices.length} total bills
+            </span>
           </div>
-          <div className="p-2 rounded-lg bg-blue-50 text-blue-600">
-            <IndianRupee className="w-5 h-5" />
-          </div>
+          <h1 className="text-xl sm:text-2xl font-black mt-1.5 tracking-tight text-white">
+            Selling & Bills
+          </h1>
+          <p className="text-xs text-slate-300 mt-0.5">
+            Create, edit, view, and print customer bills & track receivables
+          </p>
         </div>
 
-        <div className="p-3.5 rounded-xl border border-slate-200 bg-white shadow-2xs flex items-center justify-between">
-          <div>
-            <p className="text-[11px] font-bold text-slate-500 uppercase">Payment Pending</p>
-            <h3 className="text-lg font-bold text-amber-700 mt-0.5">{formatCurrency(totalPending)}</h3>
-            <p className="text-[10px] text-slate-400">{pendingCount} unpaid / partial</p>
-          </div>
-          <div className="p-2 rounded-lg bg-amber-50 text-amber-600">
-            <Clock className="w-5 h-5" />
-          </div>
-        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={onExportData}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer"
+            title="Download backup"
+          >
+            <Download className="w-3.5 h-3.5" /> Backup
+          </button>
 
-        <div className="p-3.5 rounded-xl border border-slate-200 bg-white shadow-2xs flex items-center justify-between">
-          <div>
-            <p className="text-[11px] font-bold text-slate-500 uppercase">Total Material Sold</p>
-            <h3 className="text-lg font-bold text-emerald-700 mt-0.5">{formatNumber(totalWeightKg, 1)} Kg</h3>
-            <p className="text-[10px] text-slate-400">{paidCount} paid invoices</p>
-          </div>
-          <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
-            <Weight className="w-5 h-5" />
-          </div>
+          <label className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer">
+            <Upload className="w-3.5 h-3.5" /> Restore
+            <input type="file" accept=".json" onChange={handleImportFile} className="hidden" />
+          </label>
+
+          <button
+            onClick={handleStartNew}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
+          >
+            <PlusCircle className="w-4 h-4" /> New Bill
+          </button>
         </div>
       </div>
 
       {/* Main Table Card */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
-        {/* Header Bar */}
-        <div className="p-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="text-base font-bold text-slate-900">Invoices & Bills</h2>
-            <p className="text-[11px] text-slate-500">Create, edit, view, and print your customer bills</p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={onExportData}
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-50 border border-slate-200 rounded-lg"
-              title="Download backup"
-            >
-              <Download className="w-3.5 h-3.5" /> Backup
-            </button>
-
-            <label className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer">
-              <Upload className="w-3.5 h-3.5" /> Restore
-              <input type="file" accept=".json" onChange={handleImportFile} className="hidden" />
-            </label>
-
-            <button
-              onClick={handleStartNew}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-2xs"
-            >
-              <PlusCircle className="w-4 h-4" /> New Bill
-            </button>
-          </div>
-        </div>
 
         {/* Search & Tabs */}
         <div className="p-3 bg-slate-50/50 border-b border-slate-100 flex flex-wrap items-center justify-between gap-2.5">
@@ -1276,7 +1381,18 @@ export default function InvoicesPage({
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-50 text-slate-600 uppercase text-[10px] font-bold tracking-wider border-b border-slate-200">
                 <tr>
-                  <th className="py-2.5 px-3">Invoice #</th>
+                  <th
+                    className="py-2.5 px-3 cursor-pointer hover:text-indigo-600 transition-colors select-none"
+                    onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                    title="Click to toggle order (Ascending / Descending)"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span>Invoice #</span>
+                      <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.2 rounded border border-indigo-200">
+                        {sortOrder === 'asc' ? '↑ 1001...' : '↓ Latest'}
+                      </span>
+                    </div>
+                  </th>
                   <th className="py-2.5 px-3">Date</th>
                   <th className="py-2.5 px-3">Customer</th>
                   <th className="py-2.5 px-3">Items</th>

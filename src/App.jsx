@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
-import Footer from './components/Footer';
+import DashboardPage from './pages/DashboardPage';
 import InvoicesPage from './pages/InvoicesPage';
+import PurchasesPage from './pages/PurchasesPage';
+import ProductsPage from './pages/ProductsPage';
 import CalculatorPage from './pages/CalculatorPage';
 import CustomersPage from './pages/CustomersPage';
 import SettingsPage from './pages/SettingsPage';
@@ -14,6 +16,13 @@ import {
   getCustomersList,
   saveCustomer,
   deleteCustomer,
+  getProductsList,
+  saveProduct,
+  deleteProduct,
+  adjustProductStock,
+  getPurchasesList,
+  savePurchase,
+  deletePurchase,
   generateNextInvoiceNumber,
   exportAllData,
   importDataFromJson
@@ -21,28 +30,42 @@ import {
 import { INITIAL_SAMPLE_INVOICE } from './constants/defaults';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('invoices');
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [invoices, setInvoices] = useState([]);
   const [company, setCompany] = useState(null);
   const [customers, setCustomers] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [purchases, setPurchases] = useState([]);
   const [activeInvoice, setActiveInvoice] = useState(null);
   const [toastMessage, setToastMessage] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Initialize data on mount
   useEffect(() => {
     const loadedInvoices = getSavedInvoices();
     const loadedCompany = getCompanyProfile();
     const loadedCustomers = getCustomersList();
+    const loadedProducts = getProductsList();
+    const loadedPurchases = getPurchasesList();
 
     setInvoices(loadedInvoices);
     setCompany(loadedCompany);
     setCustomers(loadedCustomers);
+    setProducts(loadedProducts);
+    setPurchases(loadedPurchases);
   }, []);
 
   const showToast = (msg) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3000);
   };
+
+  // Count low stock items for alert badge in navbar
+  const lowStockCount = products.filter(p => {
+    const stock = parseFloat(p.currentStock) || 0;
+    const minAlert = parseFloat(p.minStockAlert) || 10;
+    return stock <= minAlert;
+  }).length;
 
   // Create a fresh blank invoice
   const handleStartNewInvoice = (prefilledCustomer = null) => {
@@ -94,8 +117,73 @@ export default function App() {
     setActiveTab('invoices');
   };
 
-  // Save invoice to storage
+  // Start a new invoice prefilled with a catalog product
+  const handleStartNewInvoiceWithProduct = (product) => {
+    const nextInvoiceNumber = generateNextInvoiceNumber(invoices);
+    const today = new Date().toISOString().slice(0, 10);
+    const due = new Date(Date.now() + 15 * 86400000).toISOString().slice(0, 10);
+
+    const newInvoice = {
+      id: `INV-${Date.now()}`,
+      invoiceNumber: nextInvoiceNumber,
+      date: today,
+      dueDate: due,
+      poNumber: '',
+      transportMode: '',
+      paymentTerms: 'Immediate',
+      paymentStatus: 'pending',
+      paidAmount: 0,
+      customer: {
+        name: '',
+        contactPerson: '',
+        phone: '',
+        billingAddress: '',
+        gstin: ''
+      },
+      items: [
+        {
+          id: `item-${Date.now()}`,
+          productId: product.id,
+          description: product.name,
+          unit: product.unit || 'kg',
+          quantity: 10,
+          rate: product.sellingPrice || 0,
+          gstRate: 0,
+          hasAdvancedSpecs: false
+        }
+      ],
+      freightCharge: 0,
+      cylinderCharge: 0,
+      discountAmount: 0,
+      notes: 'Thank you for your business!'
+    };
+
+    setActiveInvoice(newInvoice);
+    setActiveTab('invoices');
+    showToast(`Started new bill for ${product.name}!`);
+  };
+
+  // Save invoice to storage and adjust live product stock
   const handleSaveInvoice = (invoiceToSave) => {
+    const isNew = !invoices.some(i => i.id === invoiceToSave.id);
+    
+    // If it's a new invoice, deduct billed quantities from matching catalog products
+    if (isNew && invoiceToSave.items && invoiceToSave.items.length > 0) {
+      invoiceToSave.items.forEach(item => {
+        const qty = parseFloat(item.quantity) || 0;
+        if (qty > 0) {
+          const matchedProd = products.find(p =>
+            p.id === item.productId ||
+            (p.name && item.description && p.name.trim().toLowerCase() === item.description.trim().toLowerCase())
+          );
+          if (matchedProd) {
+            adjustProductStock(matchedProd.id, -qty);
+          }
+        }
+      });
+      setProducts(getProductsList());
+    }
+
     const updated = saveInvoiceToStorage(invoiceToSave);
     setInvoices(updated);
     setActiveInvoice(invoiceToSave);
@@ -144,6 +232,47 @@ export default function App() {
     }
   };
 
+  // Product Catalog & Stock handlers
+  const handleSaveProduct = (prod) => {
+    const updated = saveProduct(prod);
+    setProducts(updated);
+    showToast(`Product "${prod.name}" saved!`);
+  };
+
+  const handleDeleteProduct = (id) => {
+    if (confirm('Delete this product from catalog?')) {
+      const updated = deleteProduct(id);
+      setProducts(updated);
+      showToast('Product removed from catalog.');
+    }
+  };
+
+  const handleAdjustStock = (id, delta) => {
+    const updated = adjustProductStock(id, delta);
+    setProducts(updated);
+    showToast('Stock quantity updated!');
+  };
+
+  // Purchases (Stock Inward) handlers
+  const handleSavePurchase = (purchase) => {
+    const updated = savePurchase(purchase);
+    setPurchases(updated);
+    setProducts(getProductsList()); // refresh inventory because incoming stock increased
+    showToast(`Purchase recorded and stock updated!`);
+  };
+
+  const handleDeletePurchase = (id) => {
+    const updated = deletePurchase(id);
+    setPurchases(updated);
+    showToast('Purchase record removed.');
+  };
+
+  // View invoice directly from Dashboard
+  const handleViewInvoiceFromDashboard = (inv) => {
+    setActiveInvoice(inv);
+    setActiveTab('invoices');
+  };
+
   // Add item from calculator to current invoice
   const handleAddItemFromCalculator = (item) => {
     const current = activeInvoice || (invoices.length > 0 ? invoices[0] : null);
@@ -186,6 +315,8 @@ export default function App() {
       setInvoices(getSavedInvoices());
       setCompany(getCompanyProfile());
       setCustomers(getCustomersList());
+      setProducts(getProductsList());
+      setPurchases(getPurchasesList());
       showToast(result.message);
     } else {
       alert(result.message);
@@ -201,60 +332,96 @@ export default function App() {
         </div>
       )}
 
-      {/* Shared Navbar */}
+      {/* Top Navbar with Hamburger Side Menu */}
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         invoicesCount={invoices.length}
+        lowStockCount={lowStockCount}
+        isOpen={isSidebarOpen}
+        setIsOpen={setIsSidebarOpen}
       />
 
-      {/* Main Pages */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5">
-        {activeTab === 'invoices' && (
-          <InvoicesPage
-            invoices={invoices}
-            company={company}
-            customers={customers}
-            activeInvoice={activeInvoice}
-            setActiveInvoice={setActiveInvoice}
-            onSaveInvoice={handleSaveInvoice}
-            onDeleteInvoice={handleDeleteInvoice}
-            onToggleStatus={handleTogglePaymentStatus}
-            onExportData={handleExportData}
-            onImportData={handleImportData}
-            onAddCustomer={handleSaveCustomer}
-            generateNextInvoiceNumber={generateNextInvoiceNumber}
-          />
-        )}
+      {/* Main Content Area (Pushed smoothly when sidebar opens - never covered!) */}
+      <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${isSidebarOpen ? 'md:pl-64' : 'pl-0'}`}>
+        <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          {activeTab === 'dashboard' && (
+            <DashboardPage
+              invoices={invoices}
+              purchases={purchases}
+              products={products}
+              customers={customers}
+              company={company}
+              onNavigate={setActiveTab}
+              onStartNewInvoice={() => handleStartNewInvoice()}
+              onViewInvoice={handleViewInvoiceFromDashboard}
+              onRestockProduct={handleAdjustStock}
+            />
+          )}
 
-        {activeTab === 'calculator' && (
-          <CalculatorPage
-            onAddToInvoice={handleAddItemFromCalculator}
-          />
-        )}
+          {activeTab === 'invoices' && (
+            <InvoicesPage
+              invoices={invoices}
+              company={company}
+              customers={customers}
+              products={products}
+              activeInvoice={activeInvoice}
+              setActiveInvoice={setActiveInvoice}
+              onSaveInvoice={handleSaveInvoice}
+              onDeleteInvoice={handleDeleteInvoice}
+              onToggleStatus={handleTogglePaymentStatus}
+              onExportData={handleExportData}
+              onImportData={handleImportData}
+              onAddCustomer={handleSaveCustomer}
+              generateNextInvoiceNumber={generateNextInvoiceNumber}
+            />
+          )}
 
-        {activeTab === 'customers' && (
-          <CustomersPage
-            customers={customers}
-            onSaveCustomer={handleSaveCustomer}
-            onDeleteCustomer={handleDeleteCustomer}
-            onSelectCustomerForNewInvoice={(cust) => {
-              handleStartNewInvoice(cust);
-              setActiveTab('invoices');
-            }}
-          />
-        )}
+          {activeTab === 'purchases' && (
+            <PurchasesPage
+              purchases={purchases}
+              products={products}
+              onSavePurchase={handleSavePurchase}
+              onDeletePurchase={handleDeletePurchase}
+            />
+          )}
 
-        {activeTab === 'settings' && (
-          <SettingsPage
-            company={company}
-            onSaveCompany={handleSaveCompany}
-          />
-        )}
-      </main>
+          {activeTab === 'products' && (
+            <ProductsPage
+              products={products}
+              onSaveProduct={handleSaveProduct}
+              onDeleteProduct={handleDeleteProduct}
+              onAdjustStock={handleAdjustStock}
+              onSelectProductForNewInvoice={handleStartNewInvoiceWithProduct}
+            />
+          )}
 
-      {/* Shared Footer */}
-      <Footer />
+          {activeTab === 'calculator' && (
+            <CalculatorPage
+              onAddToInvoice={handleAddItemFromCalculator}
+            />
+          )}
+
+          {activeTab === 'customers' && (
+            <CustomersPage
+              customers={customers}
+              onSaveCustomer={handleSaveCustomer}
+              onDeleteCustomer={handleDeleteCustomer}
+              onSelectCustomerForNewInvoice={(cust) => {
+                handleStartNewInvoice(cust);
+                setActiveTab('invoices');
+              }}
+            />
+          )}
+
+          {activeTab === 'settings' && (
+            <SettingsPage
+              company={company}
+              onSaveCompany={handleSaveCompany}
+            />
+          )}
+        </main>
+      </div>
     </div>
   );
 }

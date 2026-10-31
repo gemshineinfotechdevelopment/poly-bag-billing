@@ -1,11 +1,59 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
 @layer base {
+  * {
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11", "tnum";
+  }
+
   body {
     background-color: #f1f5f9;
     color: #1e293b;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    letter-spacing: -0.011em;
   }
+
+  /* Crisp headers and financial figures */
+  h1, h2, h3, h4, h5, h6 {
+    letter-spacing: -0.022em;
+  }
+
+  input, select, textarea, button {
+    font-family: inherit;
+    letter-spacing: inherit;
+  }
+}
+
+@keyframes slideRight {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-slideRight {
+  animation: slideRight 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.18s ease-out forwards;
 }
 
 @media print {

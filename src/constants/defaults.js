@@ -90,6 +90,45 @@ export const DEFAULT_CUSTOMERS = [
   }
 ];
 
+export const DEFAULT_PRODUCTS = [
+  {
+    id: 'prod-1',
+    name: 'Transparent Poly Bags (Standard Packing)',
+    category: 'Flat Poly Bag',
+    unit: 'kg',
+    sellingPrice: 180,
+    costPrice: 140,
+    currentStock: 120, // 120 Kg in stock
+    minStockAlert: 20,
+    hsnCode: '39232100',
+    notes: 'Standard 50 micron clear LDPE bags'
+  },
+  {
+    id: 'prod-2',
+    name: 'White Plastic Carry Bags (D-Cut)',
+    category: 'Carry Bag',
+    unit: 'packets',
+    sellingPrice: 120,
+    costPrice: 90,
+    currentStock: 45, // 45 packets
+    minStockAlert: 10,
+    hsnCode: '39232100',
+    notes: 'Pack of 100 pcs per packet'
+  },
+  {
+    id: 'prod-3',
+    name: 'Black Garbage Liner Roll',
+    category: 'Garbage Roll',
+    unit: 'rolls',
+    sellingPrice: 95,
+    costPrice: 70,
+    currentStock: 8, // 8 rolls (Low Stock)
+    minStockAlert: 15,
+    hsnCode: '39232990',
+    notes: 'Medium size, 30 bags per roll'
+  }
+];
+
 export const INITIAL_SAMPLE_INVOICE = {
   id: 'INV-1001',
   invoiceNumber: 'INV-1001',
@@ -99,7 +138,7 @@ export const INITIAL_SAMPLE_INVOICE = {
   poDate: '',
   transportMode: '',
   eWayBillNo: '',
-  supplyType: 'intrastate', // interstate or intrastate
+  supplyType: 'intrastate',
   paymentTerms: 'Immediate',
   paymentStatus: 'pending',
   paidAmount: 0,
@@ -118,8 +157,9 @@ export const INITIAL_SAMPLE_INVOICE = {
   items: [
     {
       id: 'item-1',
+      productId: 'prod-1',
       description: 'Transparent Poly Bags (Standard Packing)',
-      unit: 'kg', // 'kg', 'pcs', 'packets', 'rolls', 'bundles', '1000pcs'
+      unit: 'kg',
       quantity: 50,
       rate: 180,
       gstRate: 0,
@@ -128,7 +168,8 @@ export const INITIAL_SAMPLE_INVOICE = {
     },
     {
       id: 'item-2',
-      description: 'Plastic Carry Bags (White)',
+      productId: 'prod-2',
+      description: 'White Plastic Carry Bags (D-Cut)',
       unit: 'packets',
       quantity: 20,
       rate: 120,
@@ -138,7 +179,6 @@ export const INITIAL_SAMPLE_INVOICE = {
     }
   ],
 
-  // Extra charges (all default 0 so invoice is clean)
   cylinderCharge: 0,
   freightCharge: 0,
   packagingCharge: 0,
@@ -146,3 +186,36 @@ export const INITIAL_SAMPLE_INVOICE = {
   discountAmount: 0,
   notes: 'Thank you for your business!'
 };
+
+export const DEFAULT_PURCHASES = [
+  {
+    id: 'PUR-101',
+    purchaseNumber: 'PUR-101',
+    date: new Date(Date.now() - 5 * 86400000).toISOString().slice(0, 10),
+    vendorName: 'Apex Polymers & Packaging Ltd',
+    vendorBillNo: 'V-8942',
+    productId: 'prod-1',
+    productName: 'Transparent Poly Bags (Standard Packing)',
+    unit: 'kg',
+    quantity: 150,
+    unitCost: 140,
+    totalAmount: 21000,
+    paymentStatus: 'paid',
+    notes: 'Virgin LDPE raw bags stock inward'
+  },
+  {
+    id: 'PUR-102',
+    purchaseNumber: 'PUR-102',
+    date: new Date(Date.now() - 2 * 86400000).toISOString().slice(0, 10),
+    vendorName: 'Shree Krishna Bag Mills',
+    vendorBillNo: 'SK-331',
+    productId: 'prod-2',
+    productName: 'White Plastic Carry Bags (D-Cut)',
+    unit: 'packets',
+    quantity: 80,
+    unitCost: 85,
+    totalAmount: 6800,
+    paymentStatus: 'paid',
+    notes: 'Ready D-cut grocery bags batch'
+  }
+];

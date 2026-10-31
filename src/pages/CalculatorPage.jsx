@@ -74,14 +74,18 @@ export default function CalculatorPage({ onAddToInvoice }) {
   return (
     <div className="space-y-5 pb-16">
       {/* Title Banner */}
-      <div className="bg-gradient-to-r from-indigo-700 to-indigo-900 rounded-xl p-5 text-white shadow-sm flex flex-wrap items-center justify-between gap-4">
+      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-5 sm:p-6 text-white shadow-md border border-slate-800 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 text-xs font-semibold backdrop-blur-xs mb-1.5">
-            <Calculator className="w-3.5 h-3.5" /> Poly Bag Weight & Quotation Engine
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30">
+              Quotation & Weight Engine
+            </span>
           </div>
-          <h2 className="text-xl font-bold">Poly Bag Calculator</h2>
-          <p className="text-xs text-indigo-200 mt-0.5">
-            Calculate physical bag weight, yield (bags/kg), and cost estimation based on size and micron.
+          <h1 className="text-xl sm:text-2xl font-black mt-1.5 tracking-tight text-white">
+            Bag Calculator
+          </h1>
+          <p className="text-xs text-slate-300 mt-0.5">
+            Calculate physical bag weight, yield (bags/kg), and cost estimation based on size and micron
           </p>
         </div>
 
@@ -89,10 +93,10 @@ export default function CalculatorPage({ onAddToInvoice }) {
           <button
             onClick={handleAdd}
             disabled={addedNotice}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-bold text-xs shadow-md transition-all ${
+            className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold shadow-sm transition-all cursor-pointer ${
               addedNotice
                 ? 'bg-emerald-500 text-white'
-                : 'bg-white text-indigo-700 hover:bg-indigo-50 active:scale-95'
+                : 'bg-indigo-600 hover:bg-indigo-500 text-white hover:scale-[1.02]'
             }`}
           >
             {addedNotice ? (
