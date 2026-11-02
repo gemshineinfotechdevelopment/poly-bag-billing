@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   PlusCircle, Search, Eye, Edit3, Copy, Trash2, Printer, ArrowLeft,
   CheckCircle, Clock, AlertCircle, AlertTriangle, Download, Upload, Package, Sliders,
@@ -331,7 +331,8 @@ function InvoiceFormView({
   onSave,
   onSaveAndPreview,
   onCancel,
-  onAddCustomer
+  onAddCustomer,
+  isEdit = false
 }) {
   const [formData, setFormData] = useState(invoice);
   const [showMoreOptions, setShowMoreOptions] = useState(
@@ -471,12 +472,16 @@ function InvoiceFormView({
           </button>
           <div>
             <div className="flex items-center gap-3 mb-1.5">
-              <span className="text-[10px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
-                Bill Editor
+              <span className={`text-[10px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-full border ${
+                isEdit
+                  ? 'bg-amber-500/20 text-amber-300 border-amber-400/30'
+                  : 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30'
+              }`}>
+                {isEdit ? 'Edit Bill' : 'Create New Bill'}
               </span>
             </div>
             <h2 className="text-base sm:text-xl font-black text-white mt-1">
-              {formData.id ? `Edit Invoice (${formData.invoiceNumber})` : 'New Invoice'}
+              {isEdit ? `Edit Invoice (${formData.invoiceNumber})` : `New Invoice (${formData.invoiceNumber})`}
             </h2>
           </div>
         </div>
@@ -1126,7 +1131,16 @@ export default function InvoicesPage({
   const [viewMode, setViewMode] = useState('list'); // 'list' | 'form' | 'preview'
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [sortOrder, setSortOrder] = useState('asc'); // 'asc' (1001, 1002...) or 'desc' (latest first)
+  const [sortOrder, setSortOrder] = useState('desc'); // 'desc' (latest first) or 'asc' (1001, 1002...)
+  const [isEditMode, setIsEditMode] = useState(false);
+
+  // Auto-open form when a draft invoice is launched from outside (e.g. Dashboard "New Bill")
+  useEffect(() => {
+    if (activeInvoice && !invoices.some(i => i.id === activeInvoice.id)) {
+      setViewMode('form');
+      setIsEditMode(false);
+    }
+  }, [activeInvoice, invoices]);
 
   // Quick stats calculation
   let totalRevenue = 0;
@@ -1209,11 +1223,13 @@ export default function InvoicesPage({
     };
 
     setActiveInvoice(newInv);
+    setIsEditMode(false);
     setViewMode('form');
   };
 
   const handleEdit = (inv) => {
     setActiveInvoice(inv);
+    setIsEditMode(true);
     setViewMode('form');
   };
 
@@ -1234,6 +1250,7 @@ export default function InvoicesPage({
       paidAmount: 0
     };
     setActiveInvoice(duplicated);
+    setIsEditMode(false);
     setViewMode('form');
   };
 
@@ -1268,6 +1285,7 @@ export default function InvoicesPage({
         onSaveAndPreview={handleSaveAndShowPreview}
         onCancel={() => setViewMode('list')}
         onAddCustomer={onAddCustomer}
+        isEdit={isEditMode}
       />
     );
   }

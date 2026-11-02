@@ -139,7 +139,7 @@ export default function PurchasesPage({
           onClick={handleOpenModal}
           className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
         >
-          <PlusCircle className="w-4 h-4" /> Record Purchase
+          <PlusCircle className="w-4 h-4" /> New Purchase
         </button>
       </div>
 

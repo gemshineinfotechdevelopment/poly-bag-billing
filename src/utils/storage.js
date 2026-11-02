@@ -248,15 +248,26 @@ export function generateNextInvoiceNumber(invoices) {
   }
 
   let maxNum = 1000;
+  let prefix = 'INV';
+
   list.forEach(inv => {
-    const num = extractInvoiceNumberInt(inv.invoiceNumber);
+    if (!inv || !inv.invoiceNumber) return;
+    const str = String(inv.invoiceNumber).trim();
+
+    // Preserve prefix if present (e.g. INV)
+    const prefixMatch = str.match(/^([A-Za-z]+)[-_/]?/);
+    if (prefixMatch && prefixMatch[1]) {
+      prefix = prefixMatch[1].toUpperCase();
+    }
+
+    const num = extractInvoiceNumberInt(str);
     if (num > maxNum) {
       maxNum = num;
     }
   });
 
   const nextNum = maxNum + 1;
-  return `INV-${nextNum}`;
+  return `${prefix}-${nextNum}`;
 }
 
 /**

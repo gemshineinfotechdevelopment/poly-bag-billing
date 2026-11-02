@@ -221,6 +221,7 @@ app.get('/api/invoices', async (req, res) => {
 app.post('/api/invoices', async (req, res) => {
   try {
     const invData = req.body;
+    const isNew = !(await Invoice.exists({ id: invData.id }));
     if (!invData.id) invData.id = `INV-${Date.now()}`;
 
     const updated = await Invoice.findOneAndUpdate(
@@ -229,8 +230,8 @@ app.post('/api/invoices', async (req, res) => {
       { new: true, upsert: true }
     );
 
-    // Auto-adjust product stock on billing
-    if (Array.isArray(invData.items)) {
+    // Auto-adjust product stock ONLY on brand new billing
+    if (isNew && Array.isArray(invData.items)) {
       for (const item of invData.items) {
         if (item.productId && item.quantity) {
           const delta = -(parseFloat(item.quantity) || 0);
