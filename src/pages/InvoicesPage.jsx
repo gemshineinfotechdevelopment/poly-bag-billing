@@ -82,7 +82,7 @@ function PolyBagRow({ item, index, onChange, onRemove, onDuplicate, products = [
     <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xs hover:border-slate-300 transition-all mb-3">
       <div className="grid grid-cols-12 gap-2.5 items-center">
         {/* Index & Description */}
-        <div className="col-span-12 sm:col-span-5 flex items-start gap-2">
+        <div className="col-span-12 md:col-span-4 flex items-start gap-2">
           <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-600 text-[11px] font-bold flex items-center justify-center shrink-0 mt-1">
             {index + 1}
           </span>
@@ -133,7 +133,7 @@ function PolyBagRow({ item, index, onChange, onRemove, onDuplicate, products = [
         </div>
 
         {/* Quantity */}
-        <div className="col-span-4 sm:col-span-2">
+        <div className="col-span-4 md:col-span-2">
           <input
             type="number"
             step="any"
@@ -146,7 +146,7 @@ function PolyBagRow({ item, index, onChange, onRemove, onDuplicate, products = [
         </div>
 
         {/* Unit Selector */}
-        <div className="col-span-4 sm:col-span-2">
+        <div className="col-span-4 md:col-span-2">
           <select
             value={unit}
             onChange={(e) => {
@@ -162,32 +162,32 @@ function PolyBagRow({ item, index, onChange, onRemove, onDuplicate, products = [
         </div>
 
         {/* Rate (₹) */}
-        <div className="col-span-4 sm:col-span-2">
+        <div className="col-span-4 md:col-span-2">
           <div className="relative">
-            <span className="absolute left-2 top-1.5 text-[11px] text-slate-400">₹</span>
+            <span className="absolute left-2.5 top-1.5 text-[11px] text-slate-400 font-bold">₹</span>
             <input
               type="number"
               step="any"
               min="0"
               value={item.rate ?? ''}
               onChange={(e) => handleChange('rate', e.target.value)}
-              placeholder="Rate"
-              className="w-full pl-5 pr-2 py-1.5 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-right font-medium"
+              placeholder="0.00"
+              className="w-full pl-6 pr-2 py-1.5 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-right font-medium"
             />
           </div>
         </div>
 
         {/* Line Total & Row Actions */}
-        <div className="col-span-12 sm:col-span-1 flex items-center justify-between sm:justify-end gap-2">
-          <span className="sm:hidden text-xs text-slate-500 font-semibold">Total:</span>
+        <div className="col-span-12 md:col-span-2 flex items-center justify-between md:justify-end gap-2 pt-2 md:pt-0 border-t md:border-t-0 border-slate-100">
+          <span className="md:hidden text-xs text-slate-500 font-semibold">Total:</span>
           <div className="text-xs font-bold text-slate-900 whitespace-nowrap">
             {formatCurrency(lineTotal)}
           </div>
-          <div className="flex items-center gap-0.5">
+          <div className="flex items-center gap-1 shrink-0">
             <button
               type="button"
               onClick={onDuplicate}
-              className="p-1 text-slate-400 hover:text-slate-700 rounded transition-colors"
+              className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-md transition-colors cursor-pointer"
               title="Duplicate row"
             >
               <Copy className="w-3.5 h-3.5" />
@@ -195,7 +195,7 @@ function PolyBagRow({ item, index, onChange, onRemove, onDuplicate, products = [
             <button
               type="button"
               onClick={onRemove}
-              className="p-1 text-red-400 hover:text-red-600 rounded transition-colors"
+              className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors cursor-pointer"
               title="Delete row"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -486,21 +486,30 @@ function InvoiceFormView({
           </div>
         </div>
 
-        <div className="flex items-center gap-3 sm:gap-3.5">
+        <div className="flex items-center gap-2 sm:gap-3">
           <button
             type="button"
-            onClick={() => handleSubmit('save')}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer"
+            onClick={onCancel}
+            className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer"
           >
-            <Save className="w-3.5 h-3.5" /> Save
+            Cancel
           </button>
 
           <button
             type="button"
             onClick={() => handleSubmit('saveAndPreview')}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer"
+            title="Save and view printable invoice"
           >
-            <Eye className="w-3.5 h-3.5" /> View & Print
+            <Eye className="w-3.5 h-3.5" /> Print Preview
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleSubmit('save')}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
+          >
+            <Save className="w-4 h-4" /> Save Bill
           </button>
         </div>
       </div>
@@ -646,6 +655,15 @@ function InvoiceFormView({
                   <PlusCircle className="w-3.5 h-3.5" /> Add Blank Row
                 </button>
               </div>
+            </div>
+
+            {/* Desktop Column Headers */}
+            <div className="hidden md:grid grid-cols-12 gap-2.5 px-3.5 pb-0 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              <div className="col-span-4">Item Description</div>
+              <div className="col-span-2 text-right">Quantity</div>
+              <div className="col-span-2">Unit</div>
+              <div className="col-span-2 text-right">Price / Rate (₹)</div>
+              <div className="col-span-2 text-right pr-2">Total & Actions</div>
             </div>
 
             {(formData.items || []).map((item, index) => (
@@ -805,17 +823,17 @@ function InvoiceFormView({
             <div className="mt-5 space-y-2">
               <button
                 type="button"
-                onClick={() => handleSubmit('saveAndPreview')}
-                className="w-full flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg font-bold text-xs text-white bg-indigo-600 hover:bg-indigo-700 shadow-xs transition-colors"
+                onClick={() => handleSubmit('save')}
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl font-bold text-xs text-white bg-indigo-600 hover:bg-indigo-500 shadow-sm transition-all hover:scale-[1.01] cursor-pointer"
               >
-                <Eye className="w-4 h-4" /> Save & Print Invoice
+                <Save className="w-4 h-4" /> Save Bill
               </button>
               <button
                 type="button"
-                onClick={() => handleSubmit('save')}
-                className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg font-semibold text-xs text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
+                onClick={() => handleSubmit('saveAndPreview')}
+                className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl font-semibold text-xs text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
               >
-                <Save className="w-3.5 h-3.5" /> Save Only
+                <Eye className="w-3.5 h-3.5" /> Save & Print Preview
               </button>
             </div>
           </div>
