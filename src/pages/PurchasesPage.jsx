@@ -4,6 +4,7 @@ import {
   IndianRupee, Package, X, ArrowDownLeft, Building2, Calendar
 } from 'lucide-react';
 import { formatCurrency, formatNumber, formatDate } from '../utils/formatters';
+import { generateNextPurchaseNumber } from '../utils/storage';
 
 export default function PurchasesPage({
   purchases = [],
@@ -13,9 +14,13 @@ export default function PurchasesPage({
 }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'paid', 'pending'
+  const [sortOrder, setSortOrder] = useState('desc'); // 'desc' (latest first) | 'asc' (101 first)
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const nextPurchaseNo = generateNextPurchaseNumber(purchases);
+
   const initialForm = {
+    purchaseNumber: nextPurchaseNo,
     date: new Date().toISOString().slice(0, 10),
     vendorName: '',
     vendorBillNo: '',
@@ -49,8 +54,8 @@ export default function PurchasesPage({
   const filtered = purchases.filter(p => {
     const q = searchTerm.toLowerCase();
     const match = (
-      (p.purchaseNumber || '').toLowerCase().includes(q) ||
-      (p.vendorName || '').toLowerCase().includes(q) ||
+      (p.purchaseNumber || p.id || '').toLowerCase().includes(q) ||
+      (p.vendorName || p.supplierName || '').toLowerCase().includes(q) ||
       (p.vendorBillNo || '').toLowerCase().includes(q) ||
       (p.productName || '').toLowerCase().includes(q)
     );
@@ -59,9 +64,19 @@ export default function PurchasesPage({
     return p.paymentStatus === statusFilter;
   });
 
+  // Sort by purchaseNumber in order (e.g. PUR-101, PUR-102, PUR-103...)
+  const sorted = [...filtered].sort((a, b) => {
+    const rawA = (a.purchaseNumber || a.id || '').replace(/\D/g, '');
+    const rawB = (b.purchaseNumber || b.id || '').replace(/\D/g, '');
+    const numA = parseInt(rawA, 10) || 0;
+    const numB = parseInt(rawB, 10) || 0;
+    return sortOrder === 'desc' ? numB - numA : numA - numB;
+  });
+
   const handleOpenModal = () => {
     const firstProd = products[0];
     setFormData({
+      purchaseNumber: nextPurchaseNo,
       date: new Date().toISOString().slice(0, 10),
       vendorName: '',
       vendorBillNo: '',
@@ -106,6 +121,12 @@ export default function PurchasesPage({
 
     onSavePurchase({
       ...formData,
+      id: formData.id || `PUR-${Date.now()}`,
+      purchaseNumber: formData.purchaseNumber || nextPurchaseNo,
+      date: formData.date,
+      purchaseDate: formData.date,
+      vendorName: formData.vendorName,
+      supplierName: formData.vendorName,
       quantity: q,
       unitCost: rate,
       totalAmount: total
@@ -117,7 +138,7 @@ export default function PurchasesPage({
   return (
     <div className="space-y-8 pb-16">
       {/* 1. Header Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-6 sm:p-7 text-white shadow-md border border-slate-800 flex flex-wrap items-center justify-between gap-6">
+      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-4 sm:p-7 text-white shadow-md border border-slate-800 flex flex-wrap items-center justify-between gap-4 sm:gap-6">
         <div>
           <div className="flex items-center gap-3 mb-2.5">
             <span className="text-[10px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
@@ -199,7 +220,18 @@ export default function PurchasesPage({
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase text-[10px]">
                 <tr>
-                  <th className="py-2.5 px-3.5">Purchase #</th>
+                  <th
+                    className="py-2.5 px-3.5 cursor-pointer hover:text-indigo-600 transition-colors select-none"
+                    onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                    title="Click to toggle order (Ascending / Descending)"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span>Purchase #</span>
+                      <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.2 rounded border border-indigo-200">
+                        {sortOrder === 'asc' ? '↑ 101...' : '↓ Latest'}
+                      </span>
+                    </div>
+                  </th>
                   <th className="py-2.5 px-3.5">Date</th>
                   <th className="py-2.5 px-3.5">Vendor / Supplier</th>
                   <th className="py-2.5 px-3.5">Product Inward</th>
@@ -211,18 +243,18 @@ export default function PurchasesPage({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filtered.map(p => (
+                {sorted.map(p => (
                   <tr key={p.id} className="hover:bg-slate-50/70 transition-colors">
                     <td className="py-2.5 px-3.5 font-bold text-indigo-950 whitespace-nowrap">
-                      {p.purchaseNumber}
+                      {p.purchaseNumber || p.id}
                     </td>
                     <td className="py-2.5 px-3.5 text-slate-500 whitespace-nowrap">
-                      {formatDate(p.date)}
+                      {formatDate(p.date || p.purchaseDate || p.createdAt)}
                     </td>
                     <td className="py-2.5 px-3.5">
-                      <div className="font-semibold text-slate-800">{p.vendorName}</div>
-                      {p.vendorBillNo && (
-                        <div className="text-[10px] text-slate-400">Bill: {p.vendorBillNo}</div>
+                      <div className="font-semibold text-slate-800">{p.vendorName || p.supplierName || 'Vendor'}</div>
+                      {(p.vendorBillNo || p.billNo) && (
+                        <div className="text-[10px] text-slate-400">Bill: {p.vendorBillNo || p.billNo}</div>
                       )}
                     </td>
                     <td className="py-2.5 px-3.5">
@@ -272,12 +304,17 @@ export default function PurchasesPage({
 
       {/* 5. Record Purchase Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-2xs">
-          <div className="bg-white rounded-xl max-w-md w-full p-5 shadow-xl border border-slate-200 animate-fadeIn">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/50 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl max-w-md w-full p-4 sm:p-5 shadow-2xl border border-slate-200 animate-fadeIn max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 mb-3">
-              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-                <Truck className="w-4 h-4 text-indigo-600" /> Record Purchase
-              </h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                  <Truck className="w-4 h-4 text-indigo-600" /> Record Purchase
+                </h3>
+                <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200">
+                  {formData.purchaseNumber || nextPurchaseNo}
+                </span>
+              </div>
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}

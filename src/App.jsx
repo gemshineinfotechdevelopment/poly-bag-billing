@@ -24,6 +24,7 @@ import {
   savePurchase,
   deletePurchase,
   generateNextInvoiceNumber,
+  generateNextPurchaseNumber,
   exportAllData,
   importDataFromJson
 } from './utils/storage';
@@ -88,19 +89,11 @@ export default function App() {
           ]);
 
           // Always set state directly from MongoDB Atlas when connected
-          if (Array.isArray(dbInvoices) && dbInvoices.length > 0) {
-            setInvoices(dbInvoices);
-          } else if (loadedInvoices.length > 0) {
-            // First time seed if Atlas is empty
-            await seedLocalDataToAtlas({ invoices: loadedInvoices, products: loadedProducts, purchases: loadedPurchases, customers: loadedCustomers, company: loadedCompany });
-            const fresh = await fetchInvoicesApi();
-            if (Array.isArray(fresh) && fresh.length > 0) setInvoices(fresh);
-          }
-
-          if (Array.isArray(dbProducts) && dbProducts.length > 0) setProducts(dbProducts);
-          if (Array.isArray(dbPurchases) && dbPurchases.length > 0) setPurchases(dbPurchases);
-          if (Array.isArray(dbCustomers) && dbCustomers.length > 0) setCustomers(dbCustomers);
-          if (dbCompany) setCompany(dbCompany);
+          if (Array.isArray(dbInvoices)) setInvoices(dbInvoices);
+          if (Array.isArray(dbProducts)) setProducts(dbProducts);
+          if (Array.isArray(dbPurchases)) setPurchases(dbPurchases);
+          if (Array.isArray(dbCustomers)) setCustomers(dbCustomers);
+          if (dbCompany && Object.keys(dbCompany).length > 0) setCompany(dbCompany);
         } catch (err) {
           console.warn('Atlas sync error, running in local mode:', err.message);
         }
@@ -250,8 +243,8 @@ export default function App() {
         fetchInvoicesApi(),
         fetchProductsApi()
       ]);
-      if (Array.isArray(freshInvoices) && freshInvoices.length > 0) setInvoices(freshInvoices);
-      if (Array.isArray(freshProducts) && freshProducts.length > 0) setProducts(freshProducts);
+      if (Array.isArray(freshInvoices)) setInvoices(freshInvoices);
+      if (Array.isArray(freshProducts)) setProducts(freshProducts);
       showToast(`Invoice ${invoiceToSave.invoiceNumber} saved to database!`);
     } catch (err) {
       console.warn('Saved locally (offline fallback):', err.message);
@@ -266,8 +259,12 @@ export default function App() {
       deleteInvoiceFromStorage(id);
       try {
         await deleteInvoiceApi(id);
-        const fresh = await fetchInvoicesApi();
-        if (Array.isArray(fresh)) setInvoices(fresh);
+        const [freshInvoices, freshProducts] = await Promise.all([
+          fetchInvoicesApi(),
+          fetchProductsApi()
+        ]);
+        if (Array.isArray(freshInvoices)) setInvoices(freshInvoices);
+        if (Array.isArray(freshProducts)) setProducts(freshProducts);
         showToast('Invoice deleted from database.');
       } catch (err) {
         setInvoices(getSavedInvoices());
@@ -381,20 +378,34 @@ export default function App() {
 
   // Purchases (Stock Inward) handlers (database-driven)
   const handleSavePurchase = async (purchase) => {
-    savePurchase(purchase);
+    const purchaseNumber = purchase.purchaseNumber || generateNextPurchaseNumber(purchases);
+    const date = purchase.date || purchase.purchaseDate || new Date().toISOString().slice(0, 10);
+    const vendorName = purchase.vendorName || purchase.supplierName || 'Vendor';
+
+    const enriched = {
+      ...purchase,
+      id: purchase.id || `PUR-${Date.now()}`,
+      purchaseNumber,
+      date,
+      purchaseDate: date,
+      vendorName,
+      supplierName: vendorName
+    };
+
+    savePurchase(enriched);
     try {
-      await savePurchaseApi(purchase);
+      await savePurchaseApi(enriched);
       const [freshPurchases, freshProducts] = await Promise.all([
         fetchPurchasesApi(),
         fetchProductsApi()
       ]);
       if (Array.isArray(freshPurchases)) setPurchases(freshPurchases);
       if (Array.isArray(freshProducts)) setProducts(freshProducts);
-      showToast(`Purchase recorded and stock updated in database!`);
+      showToast(`Purchase ${purchaseNumber} recorded and stock updated in database!`);
     } catch (err) {
       setPurchases(getPurchasesList());
       setProducts(getProductsList());
-      showToast(`Purchase recorded and stock updated!`);
+      showToast(`Purchase ${purchaseNumber} recorded and stock updated!`);
     }
   };
 
@@ -403,11 +414,16 @@ export default function App() {
       deletePurchase(id);
       try {
         await deletePurchaseApi(id);
-        const fresh = await fetchPurchasesApi();
-        if (Array.isArray(fresh)) setPurchases(fresh);
+        const [freshPurchases, freshProducts] = await Promise.all([
+          fetchPurchasesApi(),
+          fetchProductsApi()
+        ]);
+        if (Array.isArray(freshPurchases)) setPurchases(freshPurchases);
+        if (Array.isArray(freshProducts)) setProducts(freshProducts);
         showToast('Purchase record removed from database.');
       } catch (err) {
         setPurchases(getPurchasesList());
+        setProducts(getProductsList());
         showToast('Purchase record removed.');
       }
     }
@@ -473,7 +489,7 @@ export default function App() {
     <div className="min-h-screen bg-slate-100 flex flex-col font-sans">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white text-xs font-bold py-2.5 px-4 rounded-xl shadow-xl border border-slate-700 animate-bounce">
+        <div className="fixed bottom-18 md:bottom-6 right-4 md:right-6 z-50 bg-slate-900 text-white text-xs font-bold py-2.5 px-4 rounded-xl shadow-xl border border-slate-700 animate-bounce">
           {toastMessage}
         </div>
       )}
@@ -488,9 +504,9 @@ export default function App() {
         setIsOpen={setIsSidebarOpen}
       />
 
-      {/* Main Content Area (Pushed smoothly when sidebar opens - never covered!) */}
+      {/* Main Content Area (Fluid full-width layout: seamlessly fills screen when sidebar is closed or open, with zero awkward side gaps) */}
       <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${isSidebarOpen ? 'md:pl-64' : 'pl-0'}`}>
-        <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <main className="flex-1 w-full px-3.5 sm:px-6 lg:px-8 pt-4 pb-24 md:py-6">
           {activeTab === 'dashboard' && (
             <DashboardPage
               invoices={invoices}

@@ -85,9 +85,12 @@ const productSchema = new mongoose.Schema({
 // 3. Purchase Schema
 const purchaseSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true },
-  purchaseNumber: { type: String, required: true },
-  purchaseDate: { type: String, required: true },
-  supplierName: { type: String, required: true },
+  purchaseNumber: { type: String, default: '' },
+  date: { type: String, default: '' },
+  purchaseDate: { type: String, default: '' },
+  vendorName: { type: String, default: '' },
+  supplierName: { type: String, default: '' },
+  vendorBillNo: { type: String, default: '' },
   supplierPhone: { type: String, default: '' },
   supplierGstin: { type: String, default: '' },
   productId: { type: String },
@@ -98,7 +101,7 @@ const purchaseSchema = new mongoose.Schema({
   totalAmount: { type: Number, default: 0 },
   paymentStatus: { type: String, enum: ['paid', 'pending'], default: 'paid' },
   notes: { type: String, default: '' }
-}, { timestamps: true });
+}, { timestamps: true, strict: false });
 
 // 4. Customer Schema
 const customerSchema = new mongoose.Schema({
@@ -251,6 +254,25 @@ app.post('/api/invoices', async (req, res) => {
 
 app.delete('/api/invoices/:id', async (req, res) => {
   try {
+    const inv = await Invoice.findOne({ id: req.params.id });
+    if (inv && Array.isArray(inv.items)) {
+      for (const item of inv.items) {
+        const qty = parseFloat(item.quantity) || 0;
+        if (qty > 0) {
+          if (item.productId) {
+            await Product.findOneAndUpdate(
+              { id: item.productId },
+              { $inc: { currentStock: qty } }
+            );
+          } else if (item.description) {
+            await Product.findOneAndUpdate(
+              { name: new RegExp('^' + item.description.trim() + '$', 'i') },
+              { $inc: { currentStock: qty } }
+            );
+          }
+        }
+      }
+    }
     await Invoice.findOneAndDelete({ id: req.params.id });
     res.json({ success: true });
   } catch (err) {
@@ -322,8 +344,35 @@ app.get('/api/purchases', async (req, res) => {
 app.post('/api/purchases', async (req, res) => {
   try {
     const purData = req.body;
-    const isNew = !(await Purchase.exists({ id: purData.id }));
     if (!purData.id) purData.id = `PUR-${Date.now()}`;
+
+    // Normalize date & vendor name fields so both UI schemas are persisted
+    if (!purData.date && purData.purchaseDate) purData.date = purData.purchaseDate;
+    if (!purData.purchaseDate && purData.date) purData.purchaseDate = purData.date;
+    if (!purData.date && !purData.purchaseDate) {
+      const today = new Date().toISOString().slice(0, 10);
+      purData.date = today;
+      purData.purchaseDate = today;
+    }
+
+    if (!purData.vendorName && purData.supplierName) purData.vendorName = purData.supplierName;
+    if (!purData.supplierName && purData.vendorName) purData.supplierName = purData.vendorName;
+
+    // Auto-generate sequential purchaseNumber if missing
+    if (!purData.purchaseNumber) {
+      const allPurchases = await Purchase.find().select('purchaseNumber');
+      let maxNum = 100;
+      allPurchases.forEach(p => {
+        const match = (p.purchaseNumber || '').match(/\d+/g);
+        if (match) {
+          const num = parseInt(match[match.length - 1], 10);
+          if (!isNaN(num) && num > maxNum) maxNum = num;
+        }
+      });
+      purData.purchaseNumber = `PUR-${maxNum + 1}`;
+    }
+
+    const isNew = !(await Purchase.exists({ id: purData.id }));
 
     const updated = await Purchase.findOneAndUpdate(
       { id: purData.id },
@@ -350,6 +399,16 @@ app.post('/api/purchases', async (req, res) => {
 
 app.delete('/api/purchases/:id', async (req, res) => {
   try {
+    const pur = await Purchase.findOne({ id: req.params.id });
+    if (pur && pur.productId && pur.quantity) {
+      const qty = parseFloat(pur.quantity) || 0;
+      if (qty > 0) {
+        await Product.findOneAndUpdate(
+          { id: pur.productId },
+          { $inc: { currentStock: -qty } }
+        );
+      }
+    }
     await Purchase.findOneAndDelete({ id: req.params.id });
     res.json({ success: true });
   } catch (err) {
@@ -394,7 +453,7 @@ app.delete('/api/customers/:id', async (req, res) => {
 });
 
 // ---------------- COMPANY SETTINGS ----------------
-app.get('/api/settings', async (req, res) => {
+app.get(['/api/settings', '/api/company'], async (req, res) => {
   try {
     if (!isDbConnected()) return res.json(null);
     const company = await Company.findOne({ id: 'primary' });
@@ -404,7 +463,7 @@ app.get('/api/settings', async (req, res) => {
   }
 });
 
-app.post('/api/settings', async (req, res) => {
+app.post(['/api/settings', '/api/company'], async (req, res) => {
   try {
     const data = req.body;
     data.id = 'primary';

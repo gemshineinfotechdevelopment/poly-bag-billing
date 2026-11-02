@@ -119,7 +119,7 @@ export default function ProductsPage({
   return (
     <div className="space-y-8 pb-16">
       {/* 1. Header Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-6 sm:p-7 text-white shadow-md border border-slate-800 flex flex-wrap items-center justify-between gap-6">
+      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-4 sm:p-7 text-white shadow-md border border-slate-800 flex flex-wrap items-center justify-between gap-4 sm:gap-6">
         <div>
           <div className="flex items-center gap-3 mb-2.5">
             <span className="text-[10px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-400/30">
@@ -318,8 +318,8 @@ export default function ProductsPage({
 
       {/* 5. Add / Edit Product Modal */}
       {isEditing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-2xs">
-          <div className="bg-white rounded-xl max-w-md w-full p-5 shadow-xl border border-slate-200 animate-fadeIn">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/50 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl max-w-md w-full p-4 sm:p-5 shadow-2xl border border-slate-200 animate-fadeIn max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 mb-3">
               <h3 className="text-sm font-bold text-slate-900">
                 {editingProduct ? 'Edit Product Details' : 'Add New Product'}
@@ -467,8 +467,8 @@ export default function ProductsPage({
 
       {/* 6. Quick Restock Popup */}
       {restockProduct && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-2xs">
-          <div className="bg-white rounded-xl max-w-xs w-full p-4 shadow-xl border border-slate-200 animate-fadeIn">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/50 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl max-w-xs w-full p-4 shadow-2xl border border-slate-200 animate-fadeIn max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100 mb-2.5">
               <h4 className="text-xs font-bold text-slate-900">Add Stock / Restock</h4>
               <button

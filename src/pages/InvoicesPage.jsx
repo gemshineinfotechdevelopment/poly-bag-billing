@@ -458,9 +458,9 @@ function InvoiceFormView({
   };
 
   return (
-    <div className="max-w-5xl mx-auto pb-16">
+    <div className="w-full pb-16">
       {/* Top Header */}
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-5 sm:p-6 text-white shadow-md border border-slate-800 mb-6 flex flex-wrap items-center justify-between gap-4 sticky top-4 z-20 backdrop-blur-md">
+      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-4 sm:p-6 text-white shadow-md border border-slate-800 mb-6 flex flex-wrap items-center justify-between gap-3 sm:gap-4 sticky top-4 z-20 backdrop-blur-md">
         <div className="flex items-center gap-4">
           <button
             type="button"
@@ -836,7 +836,7 @@ function InvoicePrintView({ invoice, company, onBack, onEdit, onDuplicate }) {
   };
 
   return (
-    <div className="max-w-3xl mx-auto pb-16">
+    <div className="w-full pb-16">
       {/* Top Action Bar (Hidden on Print) */}
       <div className="no-print bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-4 sm:p-5 text-white shadow-md border border-slate-800 mb-6 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -880,7 +880,8 @@ function InvoicePrintView({ invoice, company, onBack, onEdit, onDuplicate }) {
       </div>
 
       {/* Clean, Compact Printable Invoice Container */}
-      <div className="bg-white border border-slate-200 shadow-sm rounded-xl p-6 sm:p-8 print-shadow-none print:p-2 print:border-none print:rounded-none text-slate-800 text-xs">
+      <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
+        <div className="bg-white border border-slate-200 shadow-sm rounded-xl p-5 sm:p-8 print-shadow-none print:p-2 print:border-none print:rounded-none text-slate-800 text-xs min-w-[540px] sm:min-w-0 max-w-4xl mx-auto">
         
         {/* Header: Company & Invoice Info */}
         <div className="flex justify-between items-start pb-4 border-b border-slate-200 gap-4">
@@ -1105,6 +1106,7 @@ function InvoicePrintView({ invoice, company, onBack, onEdit, onDuplicate }) {
           </div>
         </div>
 
+        </div>
       </div>
     </div>
   );
@@ -1307,7 +1309,7 @@ export default function InvoicesPage({
   return (
     <div className="space-y-8 pb-16">
       {/* 1. Top Header Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-6 sm:p-7 text-white shadow-md border border-slate-800 flex flex-wrap items-center justify-between gap-6">
+      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-4 sm:p-7 text-white shadow-md border border-slate-800 flex flex-wrap items-center justify-between gap-4 sm:gap-6">
         <div>
           <div className="flex items-center gap-3 mb-2.5">
             <span className="text-[10px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
@@ -1325,23 +1327,10 @@ export default function InvoicesPage({
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 sm:gap-3.5">
-          <button
-            onClick={onExportData}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer"
-            title="Download backup"
-          >
-            <Download className="w-3.5 h-3.5" /> Backup
-          </button>
-
-          <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer">
-            <Upload className="w-3.5 h-3.5" /> Restore
-            <input type="file" accept=".json" onChange={handleImportFile} className="hidden" />
-          </label>
-
+        <div className="flex items-center gap-3">
           <button
             onClick={handleStartNew}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" /> New Bill
           </button>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Package, FileText, BarChart3, Users, Settings, Menu, X, ShieldCheck, Boxes, LayoutDashboard, Truck } from 'lucide-react';
+import { Package, FileText, BarChart3, Users, Settings, Menu, X, Boxes, LayoutDashboard, Truck } from 'lucide-react';
 
 export default function Navbar({
   activeTab,
@@ -78,13 +78,23 @@ export default function Navbar({
     if (window.innerWidth < 768) {
       setIsOpen(false);
     }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
     <>
+      {/* Mobile Backdrop Overlay (Allows tapping outside to dismiss drawer) */}
+      {isOpen && (
+        <div
+          className="no-print fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-40 md:hidden transition-opacity"
+          onClick={() => setIsOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Top Header Bar with Hamburger Button */}
-      <header className="no-print bg-white border-b border-slate-200 sticky top-0 z-40 px-4 sm:px-6 h-[60px] flex items-center justify-between shadow-2xs">
-        <div className="flex items-center gap-4 sm:gap-5">
+      <header className="no-print bg-white border-b border-slate-200 sticky top-0 z-40 px-3 sm:px-6 h-[58px] sm:h-[60px] flex items-center justify-between shadow-2xs">
+        <div className="flex items-center gap-3 sm:gap-5">
           {/* Hamburger Menu Toggle Button */}
           <button
             onClick={() => setIsOpen(!isOpen)}
@@ -92,19 +102,19 @@ export default function Navbar({
             title={isOpen ? "Collapse side menu" : "Open side menu"}
             aria-label="Toggle side navigation menu"
           >
-            <Menu className="w-6 h-6 group-hover:scale-105 transition-transform" />
+            <Menu className="w-5 h-5 sm:w-6 sm:h-6 group-hover:scale-105 transition-transform" />
           </button>
 
           {/* Brand Logo & Name */}
           <div
-            className="flex items-center gap-3 cursor-pointer"
+            className="flex items-center gap-2.5 sm:gap-3 cursor-pointer"
             onClick={() => handleSelectTab('dashboard')}
           >
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-600 to-indigo-800 text-white flex items-center justify-center shadow-xs shrink-0">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-tr from-indigo-600 to-indigo-800 text-white flex items-center justify-center shadow-xs shrink-0">
               <Package className="w-4 h-4" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2">
                 <span className="font-extrabold text-sm text-slate-900 tracking-tight">PolyPack</span>
                 <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 uppercase">
                   Billing
@@ -113,17 +123,40 @@ export default function Navbar({
             </div>
           </div>
         </div>
+
+        {/* Mobile current page indicator badge */}
+        <div className="md:hidden flex items-center gap-1 text-[11px] font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg">
+          <span className="w-1.5 h-1.5 rounded-full bg-indigo-600" />
+          {navItems.find(i => i.id === activeTab)?.label || 'Dashboard'}
+        </div>
       </header>
 
-      {/* Side Navigation Panel (Push sidebar: side-by-side with content, never covers it!) */}
+      {/* Side Navigation Panel */}
       <aside
-        className={`no-print fixed top-[60px] left-0 bottom-0 w-64 bg-white border-r border-slate-200 z-30 shadow-xs transition-transform duration-300 ease-in-out flex flex-col justify-between p-4 pt-5 sm:pt-6 ${
+        className={`no-print fixed top-0 md:top-[60px] left-0 bottom-0 w-72 sm:w-64 bg-white border-r border-slate-200 z-50 md:z-30 shadow-2xl md:shadow-xs transition-transform duration-300 ease-in-out flex flex-col justify-between p-4 pt-4 sm:pt-6 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
+        {/* Mobile Drawer Header with Close Button */}
+        <div className="md:hidden flex items-center justify-between pb-3 mb-2 border-b border-slate-100">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center shadow-xs">
+              <Package className="w-4 h-4" />
+            </div>
+            <span className="font-extrabold text-sm text-slate-900">PolyPack Menu</span>
+          </div>
+          <button
+            onClick={() => setIsOpen(false)}
+            className="p-1.5 text-slate-500 hover:text-slate-800 rounded-lg hover:bg-slate-100 cursor-pointer"
+            aria-label="Close menu"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
         <div className="overflow-y-auto pr-1 flex-1">
           {/* Vertical Nav Links in Ordered Sequence */}
-          <nav className="space-y-2">
+          <nav className="space-y-1.5 sm:space-y-2">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -147,7 +180,7 @@ export default function Navbar({
                     <div>
                       <div className="leading-tight">{item.label}</div>
                       <div
-                        className={`text-[10px] font-normal leading-tight mt-1 ${
+                        className={`text-[10px] font-normal leading-tight mt-0.5 ${
                           isActive ? 'text-indigo-100' : 'text-slate-400'
                         }`}
                       >
@@ -167,8 +200,10 @@ export default function Navbar({
                       {item.badge}
                     </span>
                   )}
-                  {item.highlight && !isActive && (
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  {item.badgeColor && !isActive && (
+                    <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold ${item.badgeColor}`}>
+                      {item.badge}
+                    </span>
                   )}
                 </button>
               );
@@ -188,6 +223,67 @@ export default function Navbar({
           </button>
         </div>
       </aside>
+
+      {/* Mobile Bottom Navigation Bar (Thumb navigation for smartphones) */}
+      <nav className="no-print md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200 px-1 py-1 flex items-center justify-around shadow-[0_-4px_16px_rgba(0,0,0,0.06)]">
+        <button
+          onClick={() => handleSelectTab('dashboard')}
+          className={`flex flex-col items-center justify-center py-1.5 px-2.5 rounded-xl transition-all cursor-pointer ${
+            activeTab === 'dashboard' ? 'text-indigo-600 font-bold scale-105' : 'text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <LayoutDashboard className="w-5 h-5" />
+          <span className="text-[10px] mt-0.5 font-medium">Home</span>
+        </button>
+
+        <button
+          onClick={() => handleSelectTab('invoices')}
+          className={`flex flex-col items-center justify-center py-1.5 px-2.5 rounded-xl transition-all cursor-pointer relative ${
+            activeTab === 'invoices' ? 'text-indigo-600 font-bold scale-105' : 'text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <FileText className="w-5 h-5" />
+          <span className="text-[10px] mt-0.5 font-medium">Bills</span>
+          {invoicesCount > 0 && (
+            <span className="absolute top-1 right-1.5 px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-indigo-600 text-white leading-tight">
+              {invoicesCount}
+            </span>
+          )}
+        </button>
+
+        <button
+          onClick={() => handleSelectTab('purchases')}
+          className={`flex flex-col items-center justify-center py-1.5 px-2.5 rounded-xl transition-all cursor-pointer ${
+            activeTab === 'purchases' ? 'text-indigo-600 font-bold scale-105' : 'text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <Truck className="w-5 h-5" />
+          <span className="text-[10px] mt-0.5 font-medium">Inward</span>
+        </button>
+
+        <button
+          onClick={() => handleSelectTab('products')}
+          className={`flex flex-col items-center justify-center py-1.5 px-2.5 rounded-xl transition-all cursor-pointer relative ${
+            activeTab === 'products' ? 'text-indigo-600 font-bold scale-105' : 'text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <Boxes className="w-5 h-5" />
+          <span className="text-[10px] mt-0.5 font-medium">Stock</span>
+          {lowStockCount > 0 && (
+            <span className="absolute top-1 right-2 w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+          )}
+        </button>
+
+        <button
+          onClick={() => setIsOpen(true)}
+          className={`flex flex-col items-center justify-center py-1.5 px-2.5 rounded-xl transition-all cursor-pointer ${
+            ['customers', 'reports', 'settings'].includes(activeTab) ? 'text-indigo-600 font-bold scale-105' : 'text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <Menu className="w-5 h-5" />
+          <span className="text-[10px] mt-0.5 font-medium">More</span>
+        </button>
+      </nav>
     </>
   );
 }

@@ -101,7 +101,7 @@ export default function DashboardPage({
   return (
     <div className="space-y-8 pb-16">
       {/* 1. Welcome & Business Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-6 sm:p-7 text-white shadow-md border border-slate-800 flex flex-wrap items-center justify-between gap-6">
+      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-4 sm:p-7 text-white shadow-md border border-slate-800 flex flex-wrap items-center justify-between gap-4 sm:gap-6">
         <div>
           <div className="flex items-center gap-3 mb-2.5">
             <span className="text-[10px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
@@ -132,7 +132,7 @@ export default function DashboardPage({
             onClick={() => onNavigate('purchases')}
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer"
           >
-            <Truck className="w-4 h-4 text-emerald-400" /> Record Purchase
+            <Truck className="w-4 h-4 text-emerald-400" /> New Purchase
           </button>
 
           <button

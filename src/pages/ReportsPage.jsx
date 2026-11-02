@@ -64,13 +64,13 @@ export default function ReportsPage({
   // 2. Filtered Purchases
   const filteredPurchases = useMemo(() => {
     return purchases.filter(pur => {
-      const matchDate = filterByDateRange(pur.purchaseDate);
+      const matchDate = filterByDateRange(pur.purchaseDate || pur.date);
       if (!matchDate) return false;
       if (!searchTerm) return true;
       const q = searchTerm.toLowerCase();
       return (
         (pur.purchaseNumber || '').toLowerCase().includes(q) ||
-        (pur.supplierName || '').toLowerCase().includes(q) ||
+        (pur.supplierName || pur.vendorName || '').toLowerCase().includes(q) ||
         (pur.productName || '').toLowerCase().includes(q)
       );
     });
@@ -267,7 +267,7 @@ export default function ReportsPage({
     } else if (activeReportTab === 'purchases') {
       csvContent += 'Purchase ID,Date,Supplier,Product,Quantity,Unit,Unit Rate,Total Amount,Payment Status\n';
       filteredPurchases.forEach(pur => {
-        csvContent += `"${pur.purchaseNumber}","${pur.purchaseDate}","${(pur.supplierName || '').replace(/"/g, '""')}","${(pur.productName || '').replace(/"/g, '""')}",${pur.quantity},"${pur.unit}",${pur.unitCost},${pur.totalAmount},"${pur.paymentStatus}"\n`;
+        csvContent += `"${pur.purchaseNumber}","${pur.purchaseDate || pur.date || ''}","${(pur.supplierName || pur.vendorName || '').replace(/"/g, '""')}","${(pur.productName || '').replace(/"/g, '""')}",${pur.quantity},"${pur.unit}",${pur.unitCost},${pur.totalAmount},"${pur.paymentStatus}"\n`;
       });
     } else if (activeReportTab === 'products') {
       csvContent += 'Product Name,Total Weight Sold (Kg),Total Bags Sold (Pcs),Revenue (INR),Invoices Count\n';
@@ -293,7 +293,7 @@ export default function ReportsPage({
   return (
     <div className="space-y-8 pb-16">
       {/* 1. Signature Header Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-6 sm:p-7 text-white shadow-md border border-slate-800 flex flex-wrap items-center justify-between gap-6">
+      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-4 sm:p-7 text-white shadow-md border border-slate-800 flex flex-wrap items-center justify-between gap-4 sm:gap-6">
         <div>
           <div className="flex items-center gap-3 mb-2.5">
             <span className="text-[10px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
@@ -664,10 +664,10 @@ export default function ReportsPage({
                         {pur.purchaseNumber}
                       </td>
                       <td className="py-3 px-4 text-slate-600 whitespace-nowrap">
-                        {formatDate(pur.purchaseDate)}
+                        {formatDate(pur.purchaseDate || pur.date)}
                       </td>
                       <td className="py-3 px-4 font-bold text-slate-900">
-                        {pur.supplierName}
+                        {pur.supplierName || pur.vendorName || 'Vendor'}
                       </td>
                       <td className="py-3 px-4 text-slate-700">
                         {pur.productName}

@@ -203,21 +203,45 @@ export function getPurchasesList() {
   return safeGet(STORAGE_KEYS.PURCHASES, DEFAULT_PURCHASES);
 }
 
+export function generateNextPurchaseNumber(purchasesList = null) {
+  const purchases = purchasesList || getPurchasesList();
+  let maxNum = 100;
+  purchases.forEach(p => {
+    const raw = (p.purchaseNumber || p.id || '').toString();
+    const match = raw.match(/\d+/g);
+    if (match) {
+      const num = parseInt(match[match.length - 1], 10);
+      if (!isNaN(num) && num > maxNum) maxNum = num;
+    }
+  });
+  return `PUR-${maxNum + 1}`;
+}
+
 export function savePurchase(purchase) {
   const purchases = getPurchasesList();
   const isNew = !purchases.some(p => p.id === purchase.id);
   const index = purchases.findIndex(p => p.id === purchase.id);
 
+  const purchaseNumber = purchase.purchaseNumber || generateNextPurchaseNumber(purchases);
+  const date = purchase.date || purchase.purchaseDate || new Date().toISOString().slice(0, 10);
+  const vendorName = purchase.vendorName || purchase.supplierName || 'Vendor';
+
+  const normalized = {
+    ...purchase,
+    id: purchase.id || `PUR-${Date.now()}`,
+    purchaseNumber,
+    date,
+    purchaseDate: date,
+    vendorName,
+    supplierName: vendorName,
+    updatedAt: new Date().toISOString()
+  };
+
   if (index >= 0) {
-    purchases[index] = { ...purchase, updatedAt: new Date().toISOString() };
+    purchases[index] = normalized;
   } else {
-    purchases.unshift({
-      ...purchase,
-      id: purchase.id || `PUR-${Date.now()}`,
-      purchaseNumber: purchase.purchaseNumber || `PUR-${Date.now().toString().slice(-4)}`,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    });
+    normalized.createdAt = new Date().toISOString();
+    purchases.unshift(normalized);
   }
   safeSet(STORAGE_KEYS.PURCHASES, purchases);
 
