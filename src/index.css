@@ -9,10 +9,16 @@
     font-feature-settings: "cv02", "cv03", "cv04", "cv11", "tnum";
   }
 
+  html {
+    font-size: 15px; /* Professional ERP/billing readability scale */
+  }
+
   body {
     background-color: #f1f5f9;
-    color: #1e293b;
+    color: #0f172a;
     font-family: var(--font-sans);
+    font-size: 0.95rem; /* ~14.5px clean base text */
+    line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
@@ -22,11 +28,17 @@
   /* Crisp headers and financial figures */
   h1, h2, h3, h4, h5, h6 {
     letter-spacing: -0.022em;
+    color: #0f172a;
   }
 
   input, select, textarea, button {
     font-family: inherit;
     letter-spacing: inherit;
+  }
+
+  /* Tabular figures for amounts & ledger numbers */
+  .font-mono, td, th, [data-numeric] {
+    font-variant-numeric: tabular-nums;
   }
 }
 
@@ -70,7 +82,7 @@
   body {
     background: white !important;
     color: #0f172a !important;
-    font-size: 10pt !important;
+    font-size: 10.5pt !important;
     padding: 0 !important;
     margin: 0 !important;
   }

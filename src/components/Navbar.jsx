@@ -6,6 +6,7 @@ export default function Navbar({
   setActiveTab,
   invoicesCount = 0,
   lowStockCount = 0,
+  isMongoConnected = false,
   isOpen: propIsOpen,
   setIsOpen: propSetIsOpen
 }) {
@@ -114,9 +115,9 @@ export default function Navbar({
               <Package className="w-4 h-4" />
             </div>
             <div>
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <span className="font-extrabold text-sm text-slate-900 tracking-tight">PolyPack</span>
-                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 uppercase">
+              <div className="flex items-center gap-2">
+                <span className="font-extrabold text-base sm:text-lg text-slate-900 tracking-tight">PolyPack</span>
+                <span className="text-xs font-black px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 uppercase tracking-wide">
                   Billing
                 </span>
               </div>
@@ -124,10 +125,22 @@ export default function Navbar({
           </div>
         </div>
 
-        {/* Mobile current page indicator badge */}
-        <div className="md:hidden flex items-center gap-1 text-[11px] font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg">
-          <span className="w-1.5 h-1.5 rounded-full bg-indigo-600" />
-          {navItems.find(i => i.id === activeTab)?.label || 'Dashboard'}
+        <div className="flex items-center gap-2">
+          {/* MongoDB Connection Status Badge */}
+          <div className={`hidden sm:flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full border ${
+            isMongoConnected
+              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+              : 'bg-slate-50 text-slate-500 border-slate-200'
+          }`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${isMongoConnected ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+            <span>{isMongoConnected ? 'Atlas Synced' : 'Local Mode'}</span>
+          </div>
+
+          {/* Mobile current page indicator badge */}
+          <div className="md:hidden flex items-center gap-1 text-xs font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-lg">
+            <span className="w-1.5 h-1.5 rounded-full bg-indigo-600" />
+            {navItems.find(i => i.id === activeTab)?.label || 'Dashboard'}
+          </div>
         </div>
       </header>
 
@@ -165,7 +178,7 @@ export default function Navbar({
                 <button
                   key={item.id}
                   onClick={() => handleSelectTab(item.id)}
-                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all group cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all group cursor-pointer ${
                     isActive
                       ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-200 font-bold'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -178,10 +191,10 @@ export default function Navbar({
                       }`}
                     />
                     <div>
-                      <div className="leading-tight">{item.label}</div>
+                      <div className="leading-tight text-sm font-semibold">{item.label}</div>
                       <div
-                        className={`text-[10px] font-normal leading-tight mt-0.5 ${
-                          isActive ? 'text-indigo-100' : 'text-slate-400'
+                        className={`text-xs font-normal leading-tight mt-0.5 ${
+                          isActive ? 'text-indigo-100' : 'text-slate-500'
                         }`}
                       >
                         {item.description}
@@ -191,7 +204,7 @@ export default function Navbar({
 
                   {item.badge !== undefined && item.badge > 0 && (
                     <span
-                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${
+                      className={`px-2 py-0.5 rounded-full text-xs font-bold shrink-0 ${
                         isActive
                           ? 'bg-white/20 text-white'
                           : 'bg-slate-100 text-slate-600 group-hover:bg-slate-200'
@@ -201,7 +214,7 @@ export default function Navbar({
                     </span>
                   )}
                   {item.badgeColor && !isActive && (
-                    <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold ${item.badgeColor}`}>
+                    <span className={`px-2 py-0.5 rounded text-xs font-bold ${item.badgeColor}`}>
                       {item.badge}
                     </span>
                   )}
@@ -213,7 +226,7 @@ export default function Navbar({
 
         {/* Footer Collapse Shortcut */}
         <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-          <span className="text-[11px] font-medium text-slate-400">Navigation Menu</span>
+          <span className="text-xs font-semibold text-slate-400">Navigation Menu</span>
           <button
             onClick={() => setIsOpen(false)}
             className="p-1 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
@@ -233,7 +246,7 @@ export default function Navbar({
           }`}
         >
           <LayoutDashboard className="w-5 h-5" />
-          <span className="text-[10px] mt-0.5 font-medium">Home</span>
+          <span className="text-xs mt-0.5 font-semibold">Home</span>
         </button>
 
         <button
@@ -243,9 +256,9 @@ export default function Navbar({
           }`}
         >
           <FileText className="w-5 h-5" />
-          <span className="text-[10px] mt-0.5 font-medium">Bills</span>
+          <span className="text-xs mt-0.5 font-semibold">Bills</span>
           {invoicesCount > 0 && (
-            <span className="absolute top-1 right-1.5 px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-indigo-600 text-white leading-tight">
+            <span className="absolute top-1 right-1 px-1.5 py-0.5 rounded-full text-xs font-bold bg-indigo-600 text-white leading-tight">
               {invoicesCount}
             </span>
           )}
@@ -258,7 +271,7 @@ export default function Navbar({
           }`}
         >
           <Truck className="w-5 h-5" />
-          <span className="text-[10px] mt-0.5 font-medium">Inward</span>
+          <span className="text-xs mt-0.5 font-semibold">Inward</span>
         </button>
 
         <button
@@ -268,7 +281,7 @@ export default function Navbar({
           }`}
         >
           <Boxes className="w-5 h-5" />
-          <span className="text-[10px] mt-0.5 font-medium">Stock</span>
+          <span className="text-xs mt-0.5 font-semibold">Stock</span>
           {lowStockCount > 0 && (
             <span className="absolute top-1 right-2 w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
           )}
@@ -281,7 +294,7 @@ export default function Navbar({
           }`}
         >
           <Menu className="w-5 h-5" />
-          <span className="text-[10px] mt-0.5 font-medium">More</span>
+          <span className="text-xs mt-0.5 font-semibold">More</span>
         </button>
       </nav>
     </>

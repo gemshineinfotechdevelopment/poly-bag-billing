@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import {
   PlusCircle, Search, Eye, Edit3, Copy, Trash2, Printer, ArrowLeft,
-  CheckCircle, Clock, AlertCircle, AlertTriangle, Download, Upload, Package, Sliders,
-  ChevronDown, ChevronUp, Scale, Save, IndianRupee, Weight
+  CheckCircle, AlertTriangle, Package, Sliders,
+  ChevronDown, ChevronUp, Scale, Save
 } from 'lucide-react';
 import {
-  formatCurrency, formatNumber, formatDate, calculateInvoiceTotals, calculateItemRow
+  formatCurrency, formatNumber, formatDate, calculateInvoiceTotals
 } from '../utils/formatters';
-import { BAG_TYPES, MATERIALS, UNITS, COMMON_SIZES } from '../constants/defaults';
+import { BAG_TYPES, MATERIALS, UNITS } from '../constants/defaults';
 import { calculateBagWeightGrams, micronToGauge, gaugeToMicron } from '../utils/polyBagCalc';
 import { extractInvoiceNumberInt, generateNextInvoiceNumber as getNextNum } from '../utils/storage';
 
@@ -82,8 +82,8 @@ function PolyBagRow({ item, index, onChange, onRemove, onDuplicate, products = [
     <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xs hover:border-slate-300 transition-all mb-3">
       <div className="grid grid-cols-12 gap-2.5 items-center">
         {/* Index & Description */}
-        <div className="col-span-12 sm:col-span-5 flex items-start gap-2">
-          <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-600 text-[11px] font-bold flex items-center justify-center shrink-0 mt-1">
+        <div className="col-span-12 sm:col-span-5 flex items-start gap-2.5">
+          <span className="w-6 h-6 rounded-full bg-slate-100 text-slate-700 text-xs font-bold flex items-center justify-center shrink-0 mt-1.5 border border-slate-200">
             {index + 1}
           </span>
           <div className="flex-1">
@@ -93,7 +93,7 @@ function PolyBagRow({ item, index, onChange, onRemove, onDuplicate, products = [
               value={item.description || ''}
               onChange={(e) => handleProductSelectByName(e.target.value)}
               placeholder="Product Name or select from catalog"
-              className="w-full px-2.5 py-1.5 text-xs font-semibold text-slate-800 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              className="w-full px-3 py-2 text-sm font-semibold text-slate-900 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
             />
             {products && products.length > 0 && (
               <datalist id={`catalog-options-${index}`}>
@@ -107,18 +107,18 @@ function PolyBagRow({ item, index, onChange, onRemove, onDuplicate, products = [
 
             {/* Live Stock Level Indicator */}
             {matchedProduct && (
-              <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[10px]">
+              <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
                 {parseFloat(matchedProduct.currentStock) <= 0 ? (
-                  <span className="px-1.5 py-0.2 rounded bg-rose-50 text-rose-700 font-bold border border-rose-200 inline-flex items-center gap-0.5">
-                    <AlertTriangle className="w-2.5 h-2.5" /> Out of Stock (0 {matchedProduct.unit})
+                  <span className="px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 font-bold border border-rose-200 inline-flex items-center gap-1">
+                    <AlertTriangle className="w-3 h-3" /> Out of Stock (0 {matchedProduct.unit})
                   </span>
                 ) : parseFloat(matchedProduct.currentStock) <= (parseFloat(matchedProduct.minStockAlert) || 10) ? (
-                  <span className="px-1.5 py-0.2 rounded bg-amber-50 text-amber-800 font-bold border border-amber-200 inline-flex items-center gap-0.5">
-                    <AlertTriangle className="w-2.5 h-2.5" /> Low Stock: {matchedProduct.currentStock} {matchedProduct.unit} left
+                  <span className="px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 font-bold border border-amber-200 inline-flex items-center gap-1">
+                    <AlertTriangle className="w-3 h-3" /> Low Stock: {matchedProduct.currentStock} {matchedProduct.unit} left
                   </span>
                 ) : (
-                  <span className="px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200 inline-flex items-center gap-0.5">
-                    <CheckCircle className="w-2.5 h-2.5" /> In Stock: {matchedProduct.currentStock} {matchedProduct.unit}
+                  <span className="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200 inline-flex items-center gap-1">
+                    <CheckCircle className="w-3 h-3" /> In Stock: {matchedProduct.currentStock} {matchedProduct.unit}
                   </span>
                 )}
 
@@ -141,7 +141,7 @@ function PolyBagRow({ item, index, onChange, onRemove, onDuplicate, products = [
             value={item.quantity ?? ''}
             onChange={(e) => handleChange('quantity', e.target.value)}
             placeholder="Qty"
-            className="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-right font-medium"
+            className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-right font-semibold"
           />
         </div>
 
@@ -153,7 +153,7 @@ function PolyBagRow({ item, index, onChange, onRemove, onDuplicate, products = [
               handleChange('unit', e.target.value);
               handleChange('billingMode', e.target.value);
             }}
-            className="w-full px-2 py-1.5 text-xs border border-slate-300 rounded-lg bg-white font-medium text-slate-700"
+            className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white font-semibold text-slate-800"
           >
             {UNITS.map(u => (
               <option key={u.id} value={u.id}>{u.label}</option>
@@ -164,7 +164,7 @@ function PolyBagRow({ item, index, onChange, onRemove, onDuplicate, products = [
         {/* Rate (₹) */}
         <div className="col-span-4 sm:col-span-2">
           <div className="relative">
-            <span className="absolute left-2 top-1.5 text-[11px] text-slate-400">₹</span>
+            <span className="absolute left-2.5 top-2 text-xs text-slate-500 font-bold">₹</span>
             <input
               type="number"
               step="any"
@@ -172,7 +172,7 @@ function PolyBagRow({ item, index, onChange, onRemove, onDuplicate, products = [
               value={item.rate ?? ''}
               onChange={(e) => handleChange('rate', e.target.value)}
               placeholder="Rate"
-              className="w-full pl-5 pr-2 py-1.5 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-right font-medium"
+              className="w-full pl-6 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-right font-semibold"
             />
           </div>
         </div>
@@ -180,7 +180,7 @@ function PolyBagRow({ item, index, onChange, onRemove, onDuplicate, products = [
         {/* Line Total & Row Actions */}
         <div className="col-span-12 sm:col-span-1 flex items-center justify-between sm:justify-end gap-2">
           <span className="sm:hidden text-xs text-slate-500 font-semibold">Total:</span>
-          <div className="text-xs font-bold text-slate-900 whitespace-nowrap">
+          <div className="text-sm sm:text-base font-bold text-slate-900 whitespace-nowrap">
             {formatCurrency(lineTotal)}
           </div>
           <div className="flex items-center gap-0.5">
@@ -205,7 +205,7 @@ function PolyBagRow({ item, index, onChange, onRemove, onDuplicate, products = [
       </div>
 
       {/* Optional Bag Specs Toggle */}
-      <div className="mt-2 pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-[11px]">
+      <div className="mt-2.5 pt-2.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs">
         <button
           type="button"
           onClick={() => {
@@ -213,19 +213,19 @@ function PolyBagRow({ item, index, onChange, onRemove, onDuplicate, products = [
             setShowSpecs(next);
             handleChange('hasAdvancedSpecs', next);
           }}
-          className="inline-flex items-center gap-1 font-medium text-indigo-600 hover:text-indigo-800"
+          className="inline-flex items-center gap-1 font-semibold text-indigo-600 hover:text-indigo-800"
         >
-          <Sliders className="w-3 h-3" />
+          <Sliders className="w-3.5 h-3.5" />
           {showSpecs ? 'Hide Bag Dimensions & Micron' : '+ Add Dimensions, Micron & Material (Optional)'}
-          {showSpecs ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+          {showSpecs ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
         </button>
 
-        <div className="flex items-center gap-1.5 text-slate-600">
+        <div className="flex items-center gap-2 text-slate-700 font-medium">
           <span>GST:</span>
           <select
             value={item.gstRate ?? 0}
             onChange={(e) => handleChange('gstRate', parseFloat(e.target.value) || 0)}
-            className="px-1.5 py-0.5 text-[11px] border border-slate-200 rounded bg-white text-slate-700"
+            className="px-2 py-1 text-xs font-semibold border border-slate-300 rounded-lg bg-white text-slate-800"
           >
             <option value="0">0% (Nil)</option>
             <option value="5">5%</option>
@@ -237,58 +237,58 @@ function PolyBagRow({ item, index, onChange, onRemove, onDuplicate, products = [
       </div>
 
       {showSpecs && (
-        <div className="mt-2.5 p-2.5 bg-slate-50 rounded-lg border border-slate-200 space-y-2 text-xs">
-          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2">
+        <div className="mt-3 p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5 text-xs">
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2.5">
             <div>
-              <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">Width (in)</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Width (in)</label>
               <input
                 type="number"
                 step="0.25"
                 value={item.width ?? ''}
                 onChange={(e) => handleChange('width', e.target.value)}
                 placeholder="10"
-                className="w-full px-2 py-1 text-xs bg-white border border-slate-300 rounded text-center"
+                className="w-full px-2.5 py-1.5 text-sm bg-white border border-slate-300 rounded-lg text-center font-semibold"
               />
             </div>
             <div>
-              <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">Length (in)</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Length (in)</label>
               <input
                 type="number"
                 step="0.25"
                 value={item.length ?? ''}
                 onChange={(e) => handleChange('length', e.target.value)}
                 placeholder="14"
-                className="w-full px-2 py-1 text-xs bg-white border border-slate-300 rounded text-center"
+                className="w-full px-2.5 py-1.5 text-sm bg-white border border-slate-300 rounded-lg text-center font-semibold"
               />
             </div>
             <div>
-              <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">Gusset (in)</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Gusset (in)</label>
               <input
                 type="number"
                 step="0.25"
                 value={item.gusset ?? ''}
                 onChange={(e) => handleChange('gusset', e.target.value)}
                 placeholder="0"
-                className="w-full px-2 py-1 text-xs bg-white border border-slate-300 rounded text-center"
+                className="w-full px-2.5 py-1.5 text-sm bg-white border border-slate-300 rounded-lg text-center font-semibold"
               />
             </div>
             <div>
-              <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">Micron (µm)</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Micron (µm)</label>
               <input
                 type="number"
                 step="1"
                 value={item.micron ?? ''}
                 onChange={(e) => handleChange('micron', e.target.value)}
                 placeholder="50"
-                className="w-full px-2 py-1 text-xs bg-white border border-slate-300 rounded text-center font-bold text-indigo-700"
+                className="w-full px-2.5 py-1.5 text-sm bg-white border border-slate-300 rounded-lg text-center font-bold text-indigo-700"
               />
             </div>
             <div>
-              <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">Material</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Material</label>
               <select
                 value={item.material || 'LDPE'}
                 onChange={(e) => handleChange('material', e.target.value)}
-                className="w-full px-1.5 py-1 text-xs bg-white border border-slate-300 rounded font-medium"
+                className="w-full px-2 py-1.5 text-xs sm:text-sm bg-white border border-slate-300 rounded-lg font-semibold"
               >
                 {MATERIALS.map(m => (
                   <option key={m.id} value={m.id}>{m.label}</option>
@@ -296,11 +296,11 @@ function PolyBagRow({ item, index, onChange, onRemove, onDuplicate, products = [
               </select>
             </div>
             <div>
-              <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">Bag Type</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Bag Type</label>
               <select
                 value={item.bagType || 'plain'}
                 onChange={(e) => handleChange('bagType', e.target.value)}
-                className="w-full px-1.5 py-1 text-xs bg-white border border-slate-300 rounded"
+                className="w-full px-2 py-1.5 text-xs sm:text-sm bg-white border border-slate-300 rounded-lg font-semibold"
               >
                 {BAG_TYPES.map(t => (
                   <option key={t.id} value={t.id}>{t.name}</option>
@@ -310,8 +310,8 @@ function PolyBagRow({ item, index, onChange, onRemove, onDuplicate, products = [
           </div>
 
           {bagWeightGrams > 0 && (
-            <div className="flex items-center gap-2 text-[11px] text-indigo-800 bg-indigo-50/70 px-2 py-1 rounded">
-              <Scale className="w-3 h-3 text-indigo-600" />
+            <div className="flex items-center gap-2 text-xs text-indigo-900 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100 font-medium">
+              <Scale className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
               <span>Calculated Weight: <strong>{bagWeightGrams}g</strong>/bag ({bagWeightGrams} kg per 1,000 bags)</span>
             </div>
           )}
@@ -472,7 +472,7 @@ function InvoiceFormView({
           </button>
           <div>
             <div className="flex items-center gap-3 mb-1.5">
-              <span className={`text-[10px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-full border ${
+              <span className={`text-xs uppercase font-extrabold tracking-wider px-2.5 py-1 rounded-full border ${
                 isEdit
                   ? 'bg-amber-500/20 text-amber-300 border-amber-400/30'
                   : 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30'
@@ -480,7 +480,7 @@ function InvoiceFormView({
                 {isEdit ? 'Edit Bill' : 'Create New Bill'}
               </span>
             </div>
-            <h2 className="text-base sm:text-xl font-black text-white mt-1">
+            <h2 className="text-lg sm:text-2xl font-black text-white mt-1">
               {isEdit ? `Edit Invoice (${formData.invoiceNumber})` : `New Invoice (${formData.invoiceNumber})`}
             </h2>
           </div>
@@ -490,17 +490,17 @@ function InvoiceFormView({
           <button
             type="button"
             onClick={() => handleSubmit('save')}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer"
           >
-            <Save className="w-3.5 h-3.5" /> Save
+            <Save className="w-4 h-4" /> Save
           </button>
 
           <button
             type="button"
             onClick={() => handleSubmit('saveAndPreview')}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
           >
-            <Eye className="w-3.5 h-3.5" /> View & Print
+            <Eye className="w-4 h-4" /> View & Print
           </button>
         </div>
       </div>
@@ -508,37 +508,37 @@ function InvoiceFormView({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Main Details (Left) */}
         <div className="lg:col-span-8 space-y-4">
-          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs space-y-3">
+          <div className="bg-white p-4.5 rounded-xl border border-slate-200 shadow-2xs space-y-3.5">
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               <div>
-                <label className="block text-[11px] font-semibold text-slate-700 mb-1">Invoice Number *</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Invoice Number *</label>
                 <input
                   type="text"
                   required
                   value={formData.invoiceNumber}
                   onChange={(e) => handleFieldChange('invoiceNumber', e.target.value)}
-                  className="w-full px-2.5 py-1.5 text-xs font-bold text-indigo-950 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 text-sm font-bold text-indigo-950 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-700 mb-1">Invoice Date *</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Invoice Date *</label>
                 <input
                   type="date"
                   required
                   value={formData.date}
                   onChange={(e) => handleFieldChange('date', e.target.value)}
-                  className="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-700 mb-1">Due Date</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Due Date</label>
                 <input
                   type="date"
                   value={formData.dueDate || ''}
                   onChange={(e) => handleFieldChange('dueDate', e.target.value)}
-                  className="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800"
                 />
               </div>
             </div>
@@ -546,12 +546,12 @@ function InvoiceFormView({
             {/* Customer Details */}
             <div className="pt-2 border-t border-slate-100">
               <div className="flex items-center justify-between mb-2">
-                <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Customer Details</label>
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Customer Details</label>
                 {customers.length > 0 && (
                   <select
                     onChange={(e) => handleSelectCustomer(e.target.value)}
                     defaultValue=""
-                    className="text-[11px] px-2 py-0.5 border border-indigo-200 bg-indigo-50/50 rounded font-medium text-indigo-800"
+                    className="text-xs px-2.5 py-1 border border-indigo-200 bg-indigo-50/70 rounded-lg font-bold text-indigo-900 cursor-pointer"
                   >
                     <option value="" disabled>Autofill Saved Customer...</option>
                     {customers.map(c => (
@@ -569,7 +569,7 @@ function InvoiceFormView({
                     value={formData.customer?.name || ''}
                     onChange={(e) => handleCustomerChange('name', e.target.value)}
                     placeholder="Customer / Shop Name *"
-                    className="w-full px-2.5 py-1.5 text-xs font-semibold border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 text-sm font-semibold border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
 
@@ -579,7 +579,7 @@ function InvoiceFormView({
                     value={formData.customer?.phone || ''}
                     onChange={(e) => handleCustomerChange('phone', e.target.value)}
                     placeholder="Phone Number (Optional)"
-                    className="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800"
                   />
                 </div>
 
@@ -589,7 +589,7 @@ function InvoiceFormView({
                     value={formData.customer?.billingAddress || ''}
                     onChange={(e) => handleCustomerChange('billingAddress', e.target.value)}
                     placeholder="Customer Address / City (Optional)"
-                    className="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800"
                   />
                 </div>
               </div>
@@ -600,9 +600,9 @@ function InvoiceFormView({
                   id="saveCust"
                   checked={saveAsNewCustomer}
                   onChange={(e) => setSaveAsNewCustomer(e.target.checked)}
-                  className="w-3.5 h-3.5 text-indigo-600 rounded"
+                  className="w-4 h-4 text-indigo-600 rounded"
                 />
-                <label htmlFor="saveCust" className="text-[11px] text-slate-500 cursor-pointer">
+                <label htmlFor="saveCust" className="text-xs font-medium text-slate-600 cursor-pointer">
                   Save customer to directory for future bills
                 </label>
               </div>
@@ -627,7 +627,7 @@ function InvoiceFormView({
                       e.target.value = '';
                     }}
                     defaultValue=""
-                    className="text-[11px] px-2.5 py-1 border border-indigo-200 bg-indigo-50/70 hover:bg-indigo-50 text-indigo-900 rounded-lg font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                    className="text-xs px-3 py-1.5 border border-indigo-200 bg-indigo-50/70 hover:bg-indigo-50 text-indigo-900 rounded-lg font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
                   >
                     <option value="" disabled>+ Pick from Products Catalog...</option>
                     {products.map(p => (
@@ -641,7 +641,7 @@ function InvoiceFormView({
                 <button
                   type="button"
                   onClick={() => handleAddItem()}
-                  className="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-2xs transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-2xs transition-colors"
                 >
                   <PlusCircle className="w-3.5 h-3.5" /> Add Blank Row
                 </button>
@@ -666,10 +666,10 @@ function InvoiceFormView({
             <button
               type="button"
               onClick={() => setShowMoreOptions(!showMoreOptions)}
-              className="w-full flex items-center justify-between text-xs font-semibold text-slate-700 hover:text-indigo-600"
+              className="w-full flex items-center justify-between text-sm font-semibold text-slate-700 hover:text-indigo-600"
             >
               <span className="flex items-center gap-1.5">
-                <Sliders className="w-3.5 h-3.5 text-slate-500" />
+                <Sliders className="w-4 h-4 text-slate-500" />
                 Additional Options (Discount, Delivery, Customer GST, Note)
               </span>
               {showMoreOptions ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -679,18 +679,18 @@ function InvoiceFormView({
               <div className="mt-3 pt-3 border-t border-slate-100 space-y-3 text-xs">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-[11px] font-semibold text-slate-600 mb-1">Customer GSTIN</label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Customer GSTIN</label>
                     <input
                       type="text"
                       value={formData.customer?.gstin || ''}
                       onChange={(e) => handleCustomerChange('gstin', e.target.value.toUpperCase())}
                       placeholder="e.g. 27AABCU9603R1ZM"
-                      className="w-full px-2.5 py-1.5 text-xs font-mono border border-slate-300 rounded-lg"
+                      className="w-full px-3 py-2 text-sm font-mono font-semibold border border-slate-300 rounded-lg"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-semibold text-slate-600 mb-1">Discount (₹)</label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Discount (₹)</label>
                     <input
                       type="number"
                       step="any"
@@ -698,12 +698,12 @@ function InvoiceFormView({
                       value={formData.discountAmount ?? 0}
                       onChange={(e) => handleFieldChange('discountAmount', e.target.value)}
                       placeholder="0"
-                      className="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg"
+                      className="w-full px-3 py-2 text-sm font-semibold border border-slate-300 rounded-lg"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-semibold text-slate-600 mb-1">Delivery / Freight (₹)</label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Delivery / Freight (₹)</label>
                     <input
                       type="number"
                       step="any"
@@ -711,19 +711,19 @@ function InvoiceFormView({
                       value={formData.freightCharge ?? 0}
                       onChange={(e) => handleFieldChange('freightCharge', e.target.value)}
                       placeholder="0"
-                      className="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg"
+                      className="w-full px-3 py-2 text-sm font-semibold border border-slate-300 rounded-lg"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">Invoice Remarks / Note</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Invoice Remarks / Note</label>
                   <input
                     type="text"
                     value={formData.notes || ''}
                     onChange={(e) => handleFieldChange('notes', e.target.value)}
                     placeholder="e.g. Thank you for your business!"
-                    className="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg"
+                    className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg text-slate-800"
                   />
                 </div>
               </div>
@@ -733,33 +733,33 @@ function InvoiceFormView({
 
         {/* Sidebar Summary (Right) */}
         <div className="lg:col-span-4 space-y-4">
-          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs sticky top-20">
+          <div className="bg-white p-4.5 rounded-xl border border-slate-200 shadow-2xs sticky top-20">
             <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3 pb-2 border-b border-slate-100">
               Bill Summary
             </h3>
 
-            <div className="space-y-2 text-xs text-slate-600 pb-3 border-b border-slate-100">
+            <div className="space-y-2.5 text-sm text-slate-600 pb-3 border-b border-slate-100">
               <div className="flex justify-between">
                 <span>Items Subtotal:</span>
                 <span className="font-semibold text-slate-900">{formatCurrency(totals.itemsBaseTotal)}</span>
               </div>
 
               {totals.discountAmount > 0 && (
-                <div className="flex justify-between text-emerald-600">
+                <div className="flex justify-between text-emerald-600 font-medium">
                   <span>Discount:</span>
                   <span>- {formatCurrency(totals.discountAmount)}</span>
                 </div>
               )}
 
               {totals.additionalCharges > 0 && (
-                <div className="flex justify-between">
+                <div className="flex justify-between font-medium">
                   <span>Extra Charges:</span>
                   <span>+ {formatCurrency(totals.additionalCharges)}</span>
                 </div>
               )}
 
               {totals.totalTax > 0 && (
-                <div className="flex justify-between">
+                <div className="flex justify-between font-medium">
                   <span>Tax:</span>
                   <span>+ {formatCurrency(totals.totalTax)}</span>
                 </div>
@@ -768,15 +768,15 @@ function InvoiceFormView({
 
             <div className="py-3 border-b border-slate-100">
               <div className="flex justify-between items-center">
-                <span className="text-xs font-bold text-slate-700 uppercase">Grand Total:</span>
-                <span className="text-xl font-black text-indigo-700">{formatCurrency(totals.grandTotal)}</span>
+                <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">Grand Total:</span>
+                <span className="text-2xl font-black text-indigo-700">{formatCurrency(totals.grandTotal)}</span>
               </div>
-              <p className="text-[10px] text-slate-500 italic mt-0.5">{totals.amountInWords}</p>
+              <p className="text-xs text-slate-500 italic mt-1">{totals.amountInWords}</p>
             </div>
 
             <div className="mt-3">
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">Payment Status</label>
-              <div className="grid grid-cols-3 gap-1">
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Payment Status</label>
+              <div className="grid grid-cols-3 gap-1.5">
                 {['pending', 'partial', 'paid'].map((status) => (
                   <button
                     key={status}
@@ -786,7 +786,7 @@ function InvoiceFormView({
                       if (status === 'paid') handleFieldChange('paidAmount', totals.grandTotal);
                       else if (status === 'pending') handleFieldChange('paidAmount', 0);
                     }}
-                    className={`py-1.5 text-[11px] font-bold rounded capitalize transition-colors ${
+                    className={`py-2 text-xs font-bold rounded-lg capitalize transition-colors ${
                       formData.paymentStatus === status
                         ? status === 'paid'
                           ? 'bg-emerald-600 text-white'
@@ -806,16 +806,16 @@ function InvoiceFormView({
               <button
                 type="button"
                 onClick={() => handleSubmit('saveAndPreview')}
-                className="w-full flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg font-bold text-xs text-white bg-indigo-600 hover:bg-indigo-700 shadow-xs transition-colors"
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl font-bold text-sm text-white bg-indigo-600 hover:bg-indigo-700 shadow-xs transition-colors cursor-pointer"
               >
                 <Eye className="w-4 h-4" /> Save & Print Invoice
               </button>
               <button
                 type="button"
                 onClick={() => handleSubmit('save')}
-                className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg font-semibold text-xs text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl font-bold text-sm text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
               >
-                <Save className="w-3.5 h-3.5" /> Save Only
+                <Save className="w-4 h-4" /> Save Only
               </button>
             </div>
           </div>
@@ -884,32 +884,32 @@ function InvoicePrintView({ invoice, company, onBack, onEdit, onDuplicate }) {
         <div className="bg-white border border-slate-200 shadow-sm rounded-xl p-5 sm:p-8 print-shadow-none print:p-2 print:border-none print:rounded-none text-slate-800 text-xs min-w-[540px] sm:min-w-0 max-w-4xl mx-auto">
         
         {/* Header: Company & Invoice Info */}
-        <div className="flex justify-between items-start pb-4 border-b border-slate-200 gap-4">
+        <div className="flex justify-between items-start pb-5 border-b border-slate-200 gap-4">
           <div>
-            <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
               {company?.name || 'POLY PACK ENTERPRISES'}
             </h1>
             {company?.tagline && (
-              <p className="text-slate-500 text-[11px] font-medium">{company.tagline}</p>
+              <p className="text-slate-500 text-xs font-semibold mt-0.5">{company.tagline}</p>
             )}
-            <div className="mt-1.5 text-slate-600 space-y-0.5 text-[11px]">
+            <div className="mt-2 text-slate-600 space-y-0.5 text-xs">
               {company?.address && <p>{company.address}, {company?.city} {company?.pincode}</p>}
               <div className="flex flex-wrap gap-x-3">
                 {company?.phone && <span><strong>Phone:</strong> {company.phone}</span>}
                 {company?.email && <span><strong>Email:</strong> {company.email}</span>}
               </div>
               {company?.gstin && (
-                <p className="font-mono text-slate-700 font-medium">GSTIN: {company.gstin}</p>
+                <p className="font-mono text-slate-700 font-semibold">GSTIN: {company.gstin}</p>
               )}
             </div>
           </div>
 
           <div className="text-right">
-            <span className="inline-block px-3 py-1 bg-indigo-50 text-indigo-700 font-extrabold text-sm rounded tracking-wide uppercase">
+            <span className="inline-block px-3.5 py-1 bg-indigo-50 text-indigo-700 font-black text-base rounded-md tracking-wider uppercase border border-indigo-200">
               INVOICE
             </span>
-            <div className="mt-2 text-slate-600 space-y-0.5 text-[11px]">
-              <p><strong className="text-slate-800">Invoice No:</strong> <span className="font-mono font-bold text-slate-900">{invoice.invoiceNumber}</span></p>
+            <div className="mt-2 text-slate-600 space-y-1 text-xs">
+              <p><strong className="text-slate-800">Invoice No:</strong> <span className="font-mono font-bold text-slate-900 text-sm">{invoice.invoiceNumber}</span></p>
               <p><strong className="text-slate-800">Date:</strong> {formatDate(invoice.date)}</p>
               {invoice.dueDate && (
                 <p><strong className="text-slate-800">Due Date:</strong> {formatDate(invoice.dueDate)}</p>
@@ -919,26 +919,26 @@ function InvoicePrintView({ invoice, company, onBack, onEdit, onDuplicate }) {
         </div>
 
         {/* Customer (Bill To) Info */}
-        <div className="py-3 border-b border-slate-100 flex justify-between items-start gap-4">
+        <div className="py-3.5 border-b border-slate-100 flex justify-between items-start gap-4">
           <div>
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">
               Billed To:
             </span>
-            <p className="font-bold text-slate-900 text-sm">{invoice.customer?.name || 'Walk-in Customer'}</p>
+            <p className="font-bold text-slate-900 text-base">{invoice.customer?.name || 'Walk-in Customer'}</p>
             {invoice.customer?.contactPerson && (
-              <p className="text-slate-600 text-[11px]">Attn: {invoice.customer.contactPerson}</p>
+              <p className="text-slate-600 text-xs mt-0.5">Attn: {invoice.customer.contactPerson}</p>
             )}
             {invoice.customer?.billingAddress && (
-              <p className="text-slate-600 text-[11px] whitespace-pre-line mt-0.5">{invoice.customer.billingAddress}</p>
+              <p className="text-slate-600 text-xs whitespace-pre-line mt-0.5">{invoice.customer.billingAddress}</p>
             )}
-            <div className="flex flex-wrap gap-x-3 mt-1 text-[11px] text-slate-600">
+            <div className="flex flex-wrap gap-x-3 mt-1 text-xs text-slate-600">
               {invoice.customer?.phone && <span><strong>Ph:</strong> {invoice.customer.phone}</span>}
               {invoice.customer?.gstin && <span><strong className="font-mono">GSTIN:</strong> {invoice.customer.gstin}</span>}
             </div>
           </div>
 
           {(invoice.poNumber || invoice.transportMode || invoice.paymentTerms) && (
-            <div className="text-right text-[11px] text-slate-600 space-y-0.5">
+            <div className="text-right text-xs text-slate-600 space-y-0.5">
               {invoice.paymentTerms && <p><strong>Terms:</strong> {invoice.paymentTerms}</p>}
               {invoice.poNumber && <p><strong>P.O. Ref:</strong> {invoice.poNumber}</p>}
               {invoice.transportMode && <p><strong>Transport:</strong> {invoice.transportMode}</p>}
@@ -947,16 +947,16 @@ function InvoicePrintView({ invoice, company, onBack, onEdit, onDuplicate }) {
         </div>
 
         {/* Clean Items Table */}
-        <div className="mt-3">
+        <div className="mt-3.5">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b-2 border-slate-200 text-slate-600 uppercase text-[10px] font-bold tracking-wider">
-                <th className="py-2 px-1 w-8 text-center">#</th>
-                <th className="py-2 px-2">Item Description</th>
-                <th className="py-2 px-2 text-right w-16">Qty</th>
-                <th className="py-2 px-2 text-center w-16">Unit</th>
-                <th className="py-2 px-2 text-right w-20">Rate (₹)</th>
-                <th className="py-2 px-2 text-right w-24">Amount (₹)</th>
+              <tr className="border-b-2 border-slate-200 text-slate-600 uppercase text-xs font-bold tracking-wider">
+                <th className="py-2.5 px-2 w-8 text-center">#</th>
+                <th className="py-2.5 px-2.5">Item Description</th>
+                <th className="py-2.5 px-2.5 text-right w-16">Qty</th>
+                <th className="py-2.5 px-2.5 text-center w-16">Unit</th>
+                <th className="py-2.5 px-2.5 text-right w-24">Rate (₹)</th>
+                <th className="py-2.5 px-2.5 text-right w-28">Amount (₹)</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -973,26 +973,26 @@ function InvoicePrintView({ invoice, company, onBack, onEdit, onDuplicate }) {
 
                 return (
                   <tr key={item.id || idx}>
-                    <td className="py-2.5 px-1 text-center text-slate-400 font-medium">{idx + 1}</td>
-                    <td className="py-2.5 px-2">
-                      <div className="font-semibold text-slate-900">{item.description}</div>
+                    <td className="py-2.5 px-2 text-center text-slate-400 font-medium text-xs">{idx + 1}</td>
+                    <td className="py-2.5 px-2.5">
+                      <div className="font-semibold text-slate-900 text-sm">{item.description}</div>
                       {dimStr && (
-                        <div className="text-[10px] text-slate-500 font-medium">{dimStr}</div>
+                        <div className="text-xs text-slate-500 font-medium">{dimStr}</div>
                       )}
                       {item.notes && (
-                        <div className="text-[10px] text-slate-400 italic">{item.notes}</div>
+                        <div className="text-xs text-slate-400 italic">{item.notes}</div>
                       )}
                     </td>
-                    <td className="py-2.5 px-2 text-right font-medium text-slate-900">
+                    <td className="py-2.5 px-2.5 text-right font-semibold text-slate-900 text-sm">
                       {formatNumber(qty, unit === 'kg' ? 1 : 0)}
                     </td>
-                    <td className="py-2.5 px-2 text-center text-slate-600 uppercase text-[10px] font-medium">
+                    <td className="py-2.5 px-2.5 text-center text-slate-600 uppercase text-xs font-bold">
                       {unit}
                     </td>
-                    <td className="py-2.5 px-2 text-right font-medium text-slate-800">
+                    <td className="py-2.5 px-2.5 text-right font-medium text-slate-800 text-sm">
                       {formatNumber(rate, 2)}
                     </td>
-                    <td className="py-2.5 px-2 text-right font-bold text-slate-900">
+                    <td className="py-2.5 px-2.5 text-right font-bold text-slate-900 text-sm">
                       {formatNumber(base, 2)}
                     </td>
                   </tr>
@@ -1001,23 +1001,23 @@ function InvoicePrintView({ invoice, company, onBack, onEdit, onDuplicate }) {
 
               {parseFloat(invoice.freightCharge) > 0 && (
                 <tr className="text-slate-700">
-                  <td className="py-2 px-1 text-center text-slate-400">•</td>
-                  <td className="py-2 px-2 font-medium">Delivery / Transport Charge</td>
-                  <td className="py-2 px-2 text-right">1</td>
-                  <td className="py-2 px-2 text-center text-[10px]">trip</td>
-                  <td className="py-2 px-2 text-right">{formatNumber(invoice.freightCharge, 2)}</td>
-                  <td className="py-2 px-2 text-right font-bold">{formatNumber(invoice.freightCharge, 2)}</td>
+                  <td className="py-2 px-2 text-center text-slate-400">•</td>
+                  <td className="py-2 px-2.5 font-medium text-sm">Delivery / Transport Charge</td>
+                  <td className="py-2 px-2.5 text-right text-sm">1</td>
+                  <td className="py-2 px-2.5 text-center text-xs uppercase font-medium">trip</td>
+                  <td className="py-2 px-2.5 text-right text-sm">{formatNumber(invoice.freightCharge, 2)}</td>
+                  <td className="py-2 px-2.5 text-right font-bold text-sm">{formatNumber(invoice.freightCharge, 2)}</td>
                 </tr>
               )}
 
               {parseFloat(invoice.cylinderCharge) > 0 && (
                 <tr className="text-slate-700">
-                  <td className="py-2 px-1 text-center text-slate-400">•</td>
-                  <td className="py-2 px-2 font-medium">Printing Cylinder / Block Charge</td>
-                  <td className="py-2 px-2 text-right">1</td>
-                  <td className="py-2 px-2 text-center text-[10px]">job</td>
-                  <td className="py-2 px-2 text-right">{formatNumber(invoice.cylinderCharge, 2)}</td>
-                  <td className="py-2 px-2 text-right font-bold">{formatNumber(invoice.cylinderCharge, 2)}</td>
+                  <td className="py-2 px-2 text-center text-slate-400">•</td>
+                  <td className="py-2 px-2.5 font-medium text-sm">Printing Cylinder / Block Charge</td>
+                  <td className="py-2 px-2.5 text-right text-sm">1</td>
+                  <td className="py-2 px-2.5 text-center text-xs uppercase font-medium">job</td>
+                  <td className="py-2 px-2.5 text-right text-sm">{formatNumber(invoice.cylinderCharge, 2)}</td>
+                  <td className="py-2 px-2.5 text-right font-bold text-sm">{formatNumber(invoice.cylinderCharge, 2)}</td>
                 </tr>
               )}
             </tbody>
@@ -1025,30 +1025,30 @@ function InvoicePrintView({ invoice, company, onBack, onEdit, onDuplicate }) {
         </div>
 
         {/* Compact Summary Block */}
-        <div className="mt-4 pt-3 border-t border-slate-200 flex justify-between items-start gap-6">
+        <div className="mt-4 pt-3.5 border-t border-slate-200 flex justify-between items-start gap-6">
           <div className="flex-1 space-y-3">
             <div>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
                 Amount in Words:
               </span>
-              <p className="font-semibold text-slate-800 text-[11px] mt-0.5">
+              <p className="font-bold text-slate-800 text-sm mt-0.5">
                 {totals.amountInWords}
               </p>
             </div>
 
             {invoice.notes && (
               <div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
                   Remarks / Terms:
                 </span>
-                <p className="text-[10px] text-slate-500 whitespace-pre-line mt-0.5">
+                <p className="text-xs text-slate-600 whitespace-pre-line mt-0.5">
                   {invoice.notes}
                 </p>
               </div>
             )}
           </div>
 
-          <div className="w-56 space-y-1.5 text-right">
+          <div className="w-64 space-y-2 text-right text-sm">
             <div className="flex justify-between text-slate-600">
               <span>Subtotal:</span>
               <span className="font-semibold text-slate-900">{formatCurrency(totals.itemsBaseTotal)}</span>
@@ -1069,20 +1069,20 @@ function InvoicePrintView({ invoice, company, onBack, onEdit, onDuplicate }) {
             )}
 
             {totals.roundOff !== 0 && (
-              <div className="flex justify-between text-[10px] text-slate-400">
+              <div className="flex justify-between text-xs text-slate-400">
                 <span>Round off:</span>
                 <span>{totals.roundOff > 0 ? `+${totals.roundOff}` : totals.roundOff}</span>
               </div>
             )}
 
-            <div className="pt-2 border-t border-slate-200 flex justify-between items-center text-sm font-extrabold text-slate-900">
+            <div className="pt-2 border-t border-slate-200 flex justify-between items-center text-base font-black text-slate-900">
               <span>Total:</span>
-              <span className="text-base text-indigo-700">{formatCurrency(totals.grandTotal)}</span>
+              <span className="text-lg text-indigo-700 font-black">{formatCurrency(totals.grandTotal)}</span>
             </div>
 
             {invoice.paymentStatus && (
-              <div className="text-[10px] pt-1">
-                <span className={`inline-block px-2 py-0.5 rounded font-bold uppercase tracking-wider ${
+              <div className="text-xs pt-1">
+                <span className={`inline-block px-2.5 py-1 rounded font-bold uppercase tracking-wider ${
                   invoice.paymentStatus === 'paid'
                     ? 'bg-emerald-50 text-emerald-700'
                     : invoice.paymentStatus === 'partial'
@@ -1100,7 +1100,7 @@ function InvoicePrintView({ invoice, company, onBack, onEdit, onDuplicate }) {
         <div className="mt-8 pt-4 border-t border-slate-100 flex justify-end">
           <div className="text-right">
             <div className="h-8"></div>
-            <p className="text-[11px] font-bold text-slate-700 border-t border-slate-300 pt-1 px-4 inline-block">
+            <p className="text-xs font-bold text-slate-700 border-t border-slate-300 pt-1 px-4 inline-block">
               {company?.authorizedSignatory || 'Authorized Signatory'}
             </p>
           </div>
@@ -1125,8 +1125,6 @@ export default function InvoicesPage({
   onSaveInvoice,
   onDeleteInvoice,
   onToggleStatus,
-  onExportData,
-  onImportData,
   onAddCustomer,
   generateNextInvoiceNumber
 }) {
@@ -1148,8 +1146,6 @@ export default function InvoicesPage({
   let totalRevenue = 0;
   let totalPending = 0;
   let totalWeightKg = 0;
-  let paidCount = 0;
-  let pendingCount = 0;
 
   invoices.forEach(inv => {
     let itemsTotal = 0;
@@ -1165,9 +1161,6 @@ export default function InvoicesPage({
     totalRevenue += grand;
     const paid = parseFloat(inv.paidAmount) || (inv.paymentStatus === 'paid' ? grand : 0);
     totalPending += Math.max(0, grand - paid);
-
-    if (inv.paymentStatus === 'paid' || grand <= paid) paidCount++;
-    else pendingCount++;
   });
 
   // Filtered invoices
@@ -1267,15 +1260,6 @@ export default function InvoicesPage({
     setViewMode('list');
   };
 
-  const handleImportFile = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => onImportData(event.target.result);
-    reader.readAsText(file);
-    e.target.value = '';
-  };
-
   // 1. RENDER EDIT FORM
   if (viewMode === 'form' && activeInvoice) {
     return (
@@ -1312,10 +1296,10 @@ export default function InvoicesPage({
       <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-4 sm:p-7 text-white shadow-md border border-slate-800 flex flex-wrap items-center justify-between gap-4 sm:gap-6">
         <div>
           <div className="flex items-center gap-3 mb-2.5">
-            <span className="text-[10px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
+            <span className="text-xs uppercase font-extrabold tracking-wider px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
               Sales & Invoicing
             </span>
-            <span className="text-xs text-slate-400 font-medium">
+            <span className="text-xs sm:text-sm text-slate-400 font-medium">
               {invoices.length} total bills
             </span>
           </div>
@@ -1330,7 +1314,7 @@ export default function InvoicesPage({
         <div className="flex items-center gap-3">
           <button
             onClick={handleStartNew}
-            className="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" /> New Bill
           </button>
@@ -1343,24 +1327,24 @@ export default function InvoicesPage({
         {/* Search & Tabs */}
         <div className="p-3 bg-slate-50/50 border-b border-slate-100 flex flex-wrap items-center justify-between gap-2.5">
           <div className="relative flex-1 min-w-[200px] max-w-sm">
-            <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-400" />
+            <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search by invoice # or customer..."
-              className="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              className="w-full pl-9 pr-3.5 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
             />
           </div>
 
-          <div className="flex items-center gap-1 bg-slate-200/60 p-1 rounded-lg text-xs">
+          <div className="flex items-center gap-1 bg-slate-200/60 p-1 rounded-lg text-xs sm:text-sm">
             {['all', 'pending', 'partial', 'paid'].map(tab => (
               <button
                 key={tab}
                 onClick={() => setStatusFilter(tab)}
-                className={`px-2.5 py-1 rounded capitalize font-semibold transition-all ${
+                className={`px-3 py-1.5 rounded capitalize font-semibold transition-all ${
                   statusFilter === tab
-                    ? 'bg-white text-indigo-700 shadow-2xs'
+                    ? 'bg-white text-indigo-700 shadow-2xs font-bold'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -1374,38 +1358,38 @@ export default function InvoicesPage({
         {filtered.length === 0 ? (
           <div className="text-center py-12 px-4">
             <Package className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-            <h3 className="text-sm font-bold text-slate-700">No bills found</h3>
-            <p className="text-xs text-slate-500 mt-0.5">Start by clicking "New Bill" to generate your first invoice.</p>
+            <h3 className="text-base font-bold text-slate-700">No bills found</h3>
+            <p className="text-xs sm:text-sm text-slate-500 mt-0.5">Start by clicking "New Bill" to generate your first invoice.</p>
             <button
               onClick={handleStartNew}
-              className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold shadow-2xs"
+              className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-2xs"
             >
               <PlusCircle className="w-4 h-4" /> New Bill
             </button>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 text-slate-600 uppercase text-[10px] font-bold tracking-wider border-b border-slate-200">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-50 text-slate-600 uppercase text-xs font-bold tracking-wider border-b border-slate-200">
                 <tr>
                   <th
-                    className="py-2.5 px-3 cursor-pointer hover:text-indigo-600 transition-colors select-none"
+                    className="py-3 px-3.5 cursor-pointer hover:text-indigo-600 transition-colors select-none"
                     onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
                     title="Click to toggle order (Ascending / Descending)"
                   >
                     <div className="flex items-center gap-1.5">
                       <span>Invoice #</span>
-                      <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.2 rounded border border-indigo-200">
+                      <span className="text-xs font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
                         {sortOrder === 'asc' ? '↑ 1001...' : '↓ Latest'}
                       </span>
                     </div>
                   </th>
-                  <th className="py-2.5 px-3">Date</th>
-                  <th className="py-2.5 px-3">Customer</th>
-                  <th className="py-2.5 px-3">Items</th>
-                  <th className="py-2.5 px-3 text-right">Amount</th>
-                  <th className="py-2.5 px-3 text-center">Status</th>
-                  <th className="py-2.5 px-3 text-right">Actions</th>
+                  <th className="py-3 px-3.5">Date</th>
+                  <th className="py-3 px-3.5">Customer</th>
+                  <th className="py-3 px-3.5">Items</th>
+                  <th className="py-3 px-3.5 text-right">Amount</th>
+                  <th className="py-3 px-3.5 text-center">Status</th>
+                  <th className="py-3 px-3.5 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -1422,34 +1406,34 @@ export default function InvoicesPage({
 
                   return (
                     <tr key={inv.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="py-2.5 px-3 font-mono font-bold text-indigo-700">
+                      <td className="py-3 px-3.5 font-mono font-bold text-indigo-700 text-sm">
                         {inv.invoiceNumber}
                       </td>
 
-                      <td className="py-2.5 px-3 text-slate-600 whitespace-nowrap">
+                      <td className="py-3 px-3.5 text-slate-600 whitespace-nowrap text-sm">
                         {formatDate(inv.date)}
                       </td>
 
-                      <td className="py-2.5 px-3">
-                        <div className="font-bold text-slate-900">{inv.customer?.name || 'Walk-in'}</div>
+                      <td className="py-3 px-3.5">
+                        <div className="font-bold text-slate-900 text-sm">{inv.customer?.name || 'Walk-in'}</div>
                         {inv.customer?.phone && (
-                          <div className="text-[10px] text-slate-400">{inv.customer.phone}</div>
+                          <div className="text-xs text-slate-500 font-medium">{inv.customer.phone}</div>
                         )}
                       </td>
 
-                      <td className="py-2.5 px-3 text-slate-600">
+                      <td className="py-3 px-3.5 text-slate-600 text-sm font-medium">
                         {inv.items?.length || 0} item(s)
                       </td>
 
-                      <td className="py-2.5 px-3 text-right font-bold text-slate-900">
+                      <td className="py-3 px-3.5 text-right font-bold text-slate-900 text-sm sm:text-base">
                         {formatCurrency(grand)}
                       </td>
 
-                      <td className="py-2.5 px-3 text-center">
+                      <td className="py-3 px-3.5 text-center">
                         <button
                           type="button"
                           onClick={() => onToggleStatus(inv.id)}
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold uppercase ${
                             inv.paymentStatus === 'paid'
                               ? 'bg-emerald-50 text-emerald-700'
                               : inv.paymentStatus === 'partial'
@@ -1462,35 +1446,35 @@ export default function InvoicesPage({
                         </button>
                       </td>
 
-                      <td className="py-2.5 px-3 text-right">
+                      <td className="py-3 px-3.5 text-right">
                         <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => handleView(inv)}
-                            className="p-1 text-indigo-600 hover:bg-indigo-50 rounded"
+                            className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg"
                             title="Print / View Invoice"
                           >
-                            <Eye className="w-3.5 h-3.5" />
+                            <Eye className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => handleEdit(inv)}
-                            className="p-1 text-slate-600 hover:bg-slate-100 rounded"
+                            className="p-1.5 text-slate-600 hover:bg-slate-100 rounded-lg"
                             title="Edit"
                           >
-                            <Edit3 className="w-3.5 h-3.5" />
+                            <Edit3 className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => handleDuplicate(inv)}
-                            className="p-1 text-slate-600 hover:bg-slate-100 rounded"
+                            className="p-1.5 text-slate-600 hover:bg-slate-100 rounded-lg"
                             title="Duplicate"
                           >
-                            <Copy className="w-3.5 h-3.5" />
+                            <Copy className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => onDeleteInvoice(inv.id)}
-                            className="p-1 text-red-600 hover:bg-red-50 rounded"
+                            className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg"
                             title="Delete"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       </td>

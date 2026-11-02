@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Building2, Save, Check, RotateCcw, Pencil, X, Lock, Unlock, FileText } from 'lucide-react';
+import { Building2, Save, Check, RotateCcw, Pencil, X, Lock, Unlock, FileText, Download, Upload } from 'lucide-react';
 import { DEFAULT_COMPANY } from '../constants/defaults';
 
-export default function SettingsPage({ company, onSaveCompany }) {
+export default function SettingsPage({ company, onSaveCompany, onExportData, onImportData }) {
   const [formData, setFormData] = useState(company || DEFAULT_COMPANY);
   const [isEditing, setIsEditing] = useState(false);
   const [savedAlert, setSavedAlert] = useState(false);
@@ -45,12 +45,12 @@ export default function SettingsPage({ company, onSaveCompany }) {
     }
   };
 
-  const inputClass = (isName = false) => `w-full px-3 py-2 text-xs rounded-xl border transition-colors ${
+  const inputClass = (isName = false) => `w-full px-3.5 py-2.5 text-sm rounded-xl border transition-colors ${
     isName ? 'font-bold text-indigo-950' : 'text-slate-800'
   } ${
     isEditing
-      ? 'bg-white border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-2xs'
-      : 'bg-slate-50/90 border-slate-200 text-slate-700 cursor-not-allowed select-text'
+      ? 'bg-white border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-2xs font-medium'
+      : 'bg-slate-50/90 border-slate-200 text-slate-700 cursor-not-allowed select-text font-medium'
   }`;
 
   return (
@@ -59,16 +59,16 @@ export default function SettingsPage({ company, onSaveCompany }) {
       <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-4 sm:p-7 text-white shadow-md border border-slate-800 flex flex-wrap items-center justify-between gap-4 sm:gap-6">
         <div>
           <div className="flex items-center gap-3 mb-2.5">
-            <span className="text-[10px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-full bg-slate-500/20 text-slate-300 border border-slate-400/30">
+            <span className="text-xs uppercase font-extrabold tracking-wider px-2.5 py-1 rounded-full bg-slate-500/20 text-slate-300 border border-slate-400/30">
               Configuration
             </span>
             {isEditing ? (
-              <span className="inline-flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30">
-                <Unlock className="w-3 h-3" /> Edit Mode Active
+              <span className="inline-flex items-center gap-1.5 text-xs uppercase font-extrabold tracking-wider px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30">
+                <Unlock className="w-3.5 h-3.5" /> Edit Mode Active
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
-                <Lock className="w-3 h-3" /> Read Only
+              <span className="inline-flex items-center gap-1.5 text-xs uppercase font-extrabold tracking-wider px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                <Lock className="w-3.5 h-3.5" /> Read Only
               </span>
             )}
           </div>
@@ -82,8 +82,8 @@ export default function SettingsPage({ company, onSaveCompany }) {
 
         <div className="flex items-center gap-2.5 sm:gap-3">
           {savedAlert && (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-              <Check className="w-3.5 h-3.5" /> Saved!
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+              <Check className="w-4 h-4" /> Saved!
             </span>
           )}
 
@@ -91,32 +91,32 @@ export default function SettingsPage({ company, onSaveCompany }) {
             <button
               type="button"
               onClick={handleEditClick}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
+              className="inline-flex items-center gap-2 px-4.5 py-2.5 rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
             >
-              <Pencil className="w-3.5 h-3.5" /> Edit Changes
+              <Pencil className="w-4 h-4" /> Edit Changes
             </button>
           ) : (
             <>
               <button
                 type="button"
                 onClick={handleCancel}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer"
               >
-                <X className="w-3.5 h-3.5" /> Cancel
+                <X className="w-4 h-4" /> Cancel
               </button>
 
               <button
                 type="button"
                 onClick={handleReset}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer"
               >
-                <RotateCcw className="w-3.5 h-3.5" /> Reset
+                <RotateCcw className="w-4 h-4" /> Reset
               </button>
 
               <button
                 type="submit"
                 form="companyForm"
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
+                className="inline-flex items-center gap-2 px-4.5 py-2.5 rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
               >
                 <Save className="w-4 h-4" /> Save Settings
               </button>
@@ -127,9 +127,9 @@ export default function SettingsPage({ company, onSaveCompany }) {
 
       {/* Mode Status Notice Banner */}
       {!isEditing ? (
-        <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs text-slate-600 shadow-2xs">
+        <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-600 shadow-2xs">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-slate-200/70 flex items-center justify-center text-slate-600">
+            <div className="w-8 h-8 rounded-lg bg-slate-200/70 flex items-center justify-center text-slate-600">
               <Lock className="w-4 h-4" />
             </div>
             <span>
@@ -139,15 +139,15 @@ export default function SettingsPage({ company, onSaveCompany }) {
           <button
             type="button"
             onClick={handleEditClick}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-colors cursor-pointer"
           >
             <Pencil className="w-3.5 h-3.5" /> Edit Changes
           </button>
         </div>
       ) : (
-        <div className="flex flex-wrap items-center justify-between gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-xs text-amber-900 shadow-2xs">
+        <div className="flex flex-wrap items-center justify-between gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-900 shadow-2xs">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-amber-200 flex items-center justify-center text-amber-800">
+            <div className="w-8 h-8 rounded-lg bg-amber-200 flex items-center justify-center text-amber-800">
               <Unlock className="w-4 h-4" />
             </div>
             <span>
@@ -157,7 +157,7 @@ export default function SettingsPage({ company, onSaveCompany }) {
           <button
             type="button"
             onClick={handleCancel}
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-amber-800 hover:bg-amber-100/70 border border-amber-300 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-amber-800 hover:bg-amber-100/70 border border-amber-300 transition-colors cursor-pointer"
           >
             Cancel
           </button>
@@ -176,16 +176,16 @@ export default function SettingsPage({ company, onSaveCompany }) {
               <button
                 type="button"
                 onClick={handleEditClick}
-                className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 cursor-pointer"
+                className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-800 cursor-pointer"
               >
-                <Pencil className="w-3 h-3" /> Edit
+                <Pencil className="w-3.5 h-3.5" /> Edit
               </button>
             )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div className="sm:col-span-2">
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">Company / Shop Name *</label>
+              <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">Company / Shop Name *</label>
               <input
                 type="text"
                 required
@@ -198,7 +198,7 @@ export default function SettingsPage({ company, onSaveCompany }) {
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">Tagline (Optional)</label>
+              <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">Tagline (Optional)</label>
               <input
                 type="text"
                 disabled={!isEditing}
@@ -210,7 +210,7 @@ export default function SettingsPage({ company, onSaveCompany }) {
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">Shop / Factory Address</label>
+              <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">Shop / Factory Address</label>
               <input
                 type="text"
                 disabled={!isEditing}
@@ -222,7 +222,7 @@ export default function SettingsPage({ company, onSaveCompany }) {
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">City</label>
+              <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">City</label>
               <input
                 type="text"
                 disabled={!isEditing}
@@ -234,7 +234,7 @@ export default function SettingsPage({ company, onSaveCompany }) {
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">State & Pincode</label>
+              <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">State & Pincode</label>
               <div className="grid grid-cols-2 gap-2">
                 <input
                   type="text"
@@ -256,7 +256,7 @@ export default function SettingsPage({ company, onSaveCompany }) {
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">Phone / Mobile</label>
+              <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">Phone / Mobile</label>
               <input
                 type="text"
                 disabled={!isEditing}
@@ -268,7 +268,7 @@ export default function SettingsPage({ company, onSaveCompany }) {
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">Email (Optional)</label>
+              <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">Email (Optional)</label>
               <input
                 type="email"
                 disabled={!isEditing}
@@ -280,14 +280,14 @@ export default function SettingsPage({ company, onSaveCompany }) {
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">GSTIN (Optional)</label>
+              <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">GSTIN (Optional)</label>
               <input
                 type="text"
                 disabled={!isEditing}
                 value={formData.gstin || ''}
                 onChange={(e) => handleChange('gstin', e.target.value.toUpperCase())}
                 placeholder={isEditing ? "Leave blank if not GST registered" : "Not registered"}
-                className={`w-full px-3 py-2 text-xs font-mono rounded-xl border transition-colors ${
+                className={`w-full px-3.5 py-2.5 text-sm font-mono font-semibold rounded-xl border transition-colors ${
                   isEditing
                     ? 'bg-white border-slate-300 text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-2xs'
                     : 'bg-slate-50/90 border-slate-200 text-slate-700 cursor-not-allowed select-text'
@@ -307,15 +307,15 @@ export default function SettingsPage({ company, onSaveCompany }) {
               <button
                 type="button"
                 onClick={handleEditClick}
-                className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 cursor-pointer"
+                className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-800 cursor-pointer"
               >
-                <Pencil className="w-3 h-3" /> Edit
+                <Pencil className="w-3.5 h-3.5" /> Edit
               </button>
             )}
           </div>
 
           <div>
-            <label className="block text-[11px] font-semibold text-slate-700 mb-1">Authorized Signatory Label</label>
+            <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">Authorized Signatory Label</label>
             <input
               type="text"
               disabled={!isEditing}
@@ -327,7 +327,7 @@ export default function SettingsPage({ company, onSaveCompany }) {
           </div>
 
           <div>
-            <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+            <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
               Remarks / Terms on Bill
             </label>
             <textarea
@@ -336,12 +336,50 @@ export default function SettingsPage({ company, onSaveCompany }) {
               value={formData.termsAndConditions || ''}
               onChange={(e) => handleChange('termsAndConditions', e.target.value)}
               placeholder="e.g. Goods once sold will not be taken back. Subject to local jurisdiction."
-              className={`w-full px-3 py-2 text-xs rounded-xl border transition-colors ${
+              className={`w-full px-3.5 py-2.5 text-sm rounded-xl border transition-colors ${
                 isEditing
                   ? 'bg-white border-slate-300 text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-2xs'
                   : 'bg-slate-50/90 border-slate-200 text-slate-700 cursor-not-allowed select-text'
               }`}
             />
+          </div>
+        </div>
+
+        {/* Data Management & Backup */}
+        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs space-y-3">
+          <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+              <Download className="w-4 h-4 text-indigo-600" /> Data Backup & Restore
+            </h3>
+            <span className="text-xs text-slate-400 font-semibold">JSON File Format</span>
+          </div>
+          <p className="text-sm text-slate-500">
+            Export a complete JSON backup of all bills, products, customers, and company profile, or restore from a previous backup file.
+          </p>
+          <div className="flex flex-wrap items-center gap-3 pt-1">
+            <button
+              type="button"
+              onClick={onExportData}
+              className="inline-flex items-center gap-2 px-4.5 py-2.5 text-sm font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer"
+            >
+              <Download className="w-4 h-4" /> Download Full Backup
+            </button>
+            <label className="inline-flex items-center gap-2 px-4.5 py-2.5 text-sm font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-xl transition-colors cursor-pointer">
+              <Upload className="w-4 h-4" /> Restore from File
+              <input
+                type="file"
+                accept=".json"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = (event) => onImportData && onImportData(event.target.result);
+                  reader.readAsText(file);
+                  e.target.value = '';
+                }}
+                className="hidden"
+              />
+            </label>
           </div>
         </div>
 
@@ -351,7 +389,7 @@ export default function SettingsPage({ company, onSaveCompany }) {
             <button
               type="button"
               onClick={handleEditClick}
-              className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
             >
               <Pencil className="w-4 h-4" /> Edit Changes
             </button>
@@ -360,13 +398,13 @@ export default function SettingsPage({ company, onSaveCompany }) {
               <button
                 type="button"
                 onClick={handleCancel}
-                className="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 rounded-xl transition-all cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 rounded-xl transition-all cursor-pointer"
               >
                 <X className="w-4 h-4" /> Cancel
               </button>
               <button
                 type="submit"
-                className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
               >
                 <Save className="w-4 h-4" /> Save Settings
               </button>

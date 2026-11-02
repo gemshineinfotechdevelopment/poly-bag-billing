@@ -28,7 +28,6 @@ import {
   exportAllData,
   importDataFromJson
 } from './utils/storage';
-import { INITIAL_SAMPLE_INVOICE } from './constants/defaults';
 import {
   getBackendStatus,
   fetchInvoicesApi,
@@ -45,8 +44,7 @@ import {
   saveCustomerApi,
   deleteCustomerApi,
   fetchCompanyApi,
-  saveCompanyApi,
-  seedLocalDataToAtlas
+  saveCompanyApi
 } from './utils/api';
 
 export default function App() {
@@ -94,7 +92,7 @@ export default function App() {
           if (Array.isArray(dbPurchases)) setPurchases(dbPurchases);
           if (Array.isArray(dbCustomers)) setCustomers(dbCustomers);
           if (dbCompany && Object.keys(dbCompany).length > 0) setCompany(dbCompany);
-        } catch (err) {
+        } catch {
           console.warn('Atlas sync error, running in local mode:', err.message);
         }
       } else {
@@ -246,7 +244,7 @@ export default function App() {
       if (Array.isArray(freshInvoices)) setInvoices(freshInvoices);
       if (Array.isArray(freshProducts)) setProducts(freshProducts);
       showToast(`Invoice ${invoiceToSave.invoiceNumber} saved to database!`);
-    } catch (err) {
+    } catch {
       console.warn('Saved locally (offline fallback):', err.message);
       setInvoices(getSavedInvoices());
       showToast(`Invoice ${invoiceToSave.invoiceNumber} saved (local mode)!`);
@@ -266,7 +264,7 @@ export default function App() {
         if (Array.isArray(freshInvoices)) setInvoices(freshInvoices);
         if (Array.isArray(freshProducts)) setProducts(freshProducts);
         showToast('Invoice deleted from database.');
-      } catch (err) {
+      } catch {
         setInvoices(getSavedInvoices());
         showToast('Invoice deleted.');
       }
@@ -285,7 +283,7 @@ export default function App() {
       const fresh = await fetchInvoicesApi();
       if (Array.isArray(fresh)) setInvoices(fresh);
       showToast(`Status updated to ${nextStatus.toUpperCase()} in database`);
-    } catch (err) {
+    } catch {
       setInvoices(getSavedInvoices());
       showToast(`Status updated to ${nextStatus.toUpperCase()}`);
     }
@@ -299,7 +297,7 @@ export default function App() {
       const fresh = await fetchCompanyApi();
       if (fresh) setCompany(fresh);
       showToast('Company profile saved to database!');
-    } catch (err) {
+    } catch {
       setCompany(getCompanyProfile());
       showToast('Company profile saved!');
     }
@@ -313,7 +311,7 @@ export default function App() {
       const fresh = await fetchCustomersApi();
       if (Array.isArray(fresh)) setCustomers(fresh);
       showToast('Customer saved to database!');
-    } catch (err) {
+    } catch {
       setCustomers(getCustomersList());
       showToast('Customer saved to directory!');
     }
@@ -327,7 +325,7 @@ export default function App() {
         const fresh = await fetchCustomersApi();
         if (Array.isArray(fresh)) setCustomers(fresh);
         showToast('Customer removed from database.');
-      } catch (err) {
+      } catch {
         setCustomers(getCustomersList());
         showToast('Customer removed.');
       }
@@ -342,7 +340,7 @@ export default function App() {
       const fresh = await fetchProductsApi();
       if (Array.isArray(fresh)) setProducts(fresh);
       showToast(`Product "${prod.name}" saved to database!`);
-    } catch (err) {
+    } catch {
       setProducts(getProductsList());
       showToast(`Product "${prod.name}" saved!`);
     }
@@ -356,7 +354,7 @@ export default function App() {
         const fresh = await fetchProductsApi();
         if (Array.isArray(fresh)) setProducts(fresh);
         showToast('Product removed from database.');
-      } catch (err) {
+      } catch {
         setProducts(getProductsList());
         showToast('Product removed from catalog.');
       }
@@ -370,7 +368,7 @@ export default function App() {
       const fresh = await fetchProductsApi();
       if (Array.isArray(fresh)) setProducts(fresh);
       showToast('Stock quantity updated in database!');
-    } catch (err) {
+    } catch {
       setProducts(getProductsList());
       showToast('Stock quantity updated!');
     }
@@ -402,7 +400,7 @@ export default function App() {
       if (Array.isArray(freshPurchases)) setPurchases(freshPurchases);
       if (Array.isArray(freshProducts)) setProducts(freshProducts);
       showToast(`Purchase ${purchaseNumber} recorded and stock updated in database!`);
-    } catch (err) {
+    } catch {
       setPurchases(getPurchasesList());
       setProducts(getProductsList());
       showToast(`Purchase ${purchaseNumber} recorded and stock updated!`);
@@ -421,7 +419,7 @@ export default function App() {
         if (Array.isArray(freshPurchases)) setPurchases(freshPurchases);
         if (Array.isArray(freshProducts)) setProducts(freshProducts);
         showToast('Purchase record removed from database.');
-      } catch (err) {
+      } catch {
         setPurchases(getPurchasesList());
         setProducts(getProductsList());
         showToast('Purchase record removed.');
@@ -433,36 +431,6 @@ export default function App() {
   const handleViewInvoiceFromDashboard = (inv) => {
     setActiveInvoice(inv);
     setActiveTab('invoices');
-  };
-
-  // Add item from calculator to current invoice
-  const handleAddItemFromCalculator = (item) => {
-    const current = activeInvoice || (invoices.length > 0 ? invoices[0] : null);
-    if (current) {
-      const updated = {
-        ...current,
-        items: [...(current.items || []), item]
-      };
-      setActiveInvoice(updated);
-      saveInvoiceToStorage(updated);
-      setInvoices(getSavedInvoices());
-      showToast('Item added to active invoice!');
-      setActiveTab('invoices');
-    } else {
-      const nextNum = generateNextInvoiceNumber(invoices);
-      const newInv = {
-        ...INITIAL_SAMPLE_INVOICE,
-        id: `INV-${Date.now()}`,
-        invoiceNumber: nextNum,
-        date: new Date().toISOString().slice(0, 10),
-        items: [item]
-      };
-      setActiveInvoice(newInv);
-      saveInvoiceToStorage(newInv);
-      setInvoices(getSavedInvoices());
-      showToast('Created new bill with calculated item!');
-      setActiveTab('invoices');
-    }
   };
 
   // Backup & restore
@@ -500,6 +468,7 @@ export default function App() {
         setActiveTab={setActiveTab}
         invoicesCount={invoices.length}
         lowStockCount={lowStockCount}
+        isMongoConnected={isMongoConnected}
         isOpen={isSidebarOpen}
         setIsOpen={setIsSidebarOpen}
       />
@@ -532,8 +501,6 @@ export default function App() {
               onSaveInvoice={handleSaveInvoice}
               onDeleteInvoice={handleDeleteInvoice}
               onToggleStatus={handleTogglePaymentStatus}
-              onExportData={handleExportData}
-              onImportData={handleImportData}
               onAddCustomer={handleSaveCustomer}
               generateNextInvoiceNumber={generateNextInvoiceNumber}
             />
@@ -562,8 +529,6 @@ export default function App() {
             <ReportsPage
               invoices={invoices}
               purchases={purchases}
-              products={products}
-              customers={customers}
             />
           )}
 
@@ -583,6 +548,8 @@ export default function App() {
             <SettingsPage
               company={company}
               onSaveCompany={handleSaveCompany}
+              onExportData={handleExportData}
+              onImportData={handleImportData}
             />
           )}
         </main>

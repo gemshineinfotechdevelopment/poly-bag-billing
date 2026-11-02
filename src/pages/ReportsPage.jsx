@@ -1,16 +1,14 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
-  BarChart3, TrendingUp, ShoppingCart, IndianRupee, Printer, Download,
-  Calendar, Search, Filter, ArrowUpRight, ArrowDownRight, Package,
-  Users, Truck, FileText, CheckCircle2, Clock, AlertTriangle, Layers, Percent
+  TrendingUp, ShoppingCart, IndianRupee, Printer, Download,
+  Search, ArrowUpRight, ArrowDownRight, Package,
+  Users, Truck, FileText
 } from 'lucide-react';
 import { formatCurrency, formatNumber, formatDate } from '../utils/formatters';
 
 export default function ReportsPage({
   invoices = [],
-  purchases = [],
-  products = [],
-  customers = []
+  purchases = []
 }) {
   const [activeReportTab, setActiveReportTab] = useState('sales'); // 'sales' | 'purchases' | 'products' | 'customers' | 'gst'
   const [dateFilter, setDateFilter] = useState('all'); // 'all' | 'this-month' | 'last-30' | 'this-year' | 'custom'
@@ -19,7 +17,7 @@ export default function ReportsPage({
   const [searchTerm, setSearchTerm] = useState('');
 
   // Date Filtering Helper
-  const filterByDateRange = (itemDate) => {
+  const filterByDateRange = useCallback((itemDate) => {
     if (!itemDate) return true;
     const date = new Date(itemDate);
     const now = new Date();
@@ -44,7 +42,7 @@ export default function ReportsPage({
       return true;
     }
     return true; // 'all'
-  };
+  }, [dateFilter, startDate, endDate]);
 
   // 1. Filtered Invoices
   const filteredInvoices = useMemo(() => {
@@ -59,7 +57,7 @@ export default function ReportsPage({
         (inv.items || []).some(item => (item.description || '').toLowerCase().includes(q))
       );
     });
-  }, [invoices, dateFilter, startDate, endDate, searchTerm]);
+  }, [invoices, filterByDateRange, searchTerm]);
 
   // 2. Filtered Purchases
   const filteredPurchases = useMemo(() => {
@@ -74,7 +72,7 @@ export default function ReportsPage({
         (pur.productName || '').toLowerCase().includes(q)
       );
     });
-  }, [purchases, dateFilter, startDate, endDate, searchTerm]);
+  }, [purchases, filterByDateRange, searchTerm]);
 
   // 3. Compute Comprehensive Financial Analytics
   const analytics = useMemo(() => {
@@ -296,10 +294,10 @@ export default function ReportsPage({
       <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-4 sm:p-7 text-white shadow-md border border-slate-800 flex flex-wrap items-center justify-between gap-4 sm:gap-6">
         <div>
           <div className="flex items-center gap-3 mb-2.5">
-            <span className="text-[10px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
+            <span className="text-xs uppercase font-extrabold tracking-wider px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
               Business Analytics
             </span>
-            <span className="text-xs text-slate-400 font-medium">
+            <span className="text-xs sm:text-sm text-slate-400 font-medium">
               Real-time P&L, GST & Volume Insights
             </span>
           </div>
@@ -315,15 +313,15 @@ export default function ReportsPage({
         <div className="flex flex-wrap items-center gap-3 sm:gap-3.5 no-print">
           <button
             onClick={handleExportCSV}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer"
             title="Download CSV report"
           >
-            <Download className="w-3.5 h-3.5 text-indigo-400" /> Export CSV
+            <Download className="w-4 h-4 text-indigo-400" /> Export CSV
           </button>
 
           <button
             onClick={() => window.print()}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
           >
             <Printer className="w-4 h-4" /> Print Report
           </button>
@@ -333,7 +331,7 @@ export default function ReportsPage({
       {/* 2. Date Range Filter Toolbar */}
       <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs flex flex-wrap items-center justify-between gap-4 no-print">
         {/* Preset Range Tabs */}
-        <div className="flex flex-wrap items-center gap-1.5 bg-slate-100 p-1.5 rounded-xl text-xs">
+        <div className="flex flex-wrap items-center gap-1.5 bg-slate-100 p-1.5 rounded-xl text-xs sm:text-sm">
           {[
             { id: 'all', label: 'All Time' },
             { id: 'this-month', label: 'This Month' },
@@ -357,33 +355,33 @@ export default function ReportsPage({
 
         {/* Custom Date Pickers */}
         {dateFilter === 'custom' && (
-          <div className="flex items-center gap-2 text-xs">
-            <span className="text-slate-500 font-medium">From:</span>
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-slate-600 font-semibold">From:</span>
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs"
+              className="px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-sm font-medium"
             />
-            <span className="text-slate-500 font-medium">To:</span>
+            <span className="text-slate-600 font-semibold">To:</span>
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs"
+              className="px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-sm font-medium"
             />
           </div>
         )}
 
         {/* Search Input */}
         <div className="relative min-w-[220px] max-w-sm flex-1">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400" />
+          <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search report records..."
-            className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+            className="w-full pl-9 pr-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
           />
         </div>
       </div>
@@ -393,15 +391,15 @@ export default function ReportsPage({
         {/* Gross Sales Turnover */}
         <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-2xs hover:border-slate-300 transition-all">
           <div className="flex items-center justify-between text-slate-500 mb-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Gross Sales</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Gross Sales</span>
             <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-lg sm:text-2xl font-black text-slate-900 mt-1">
+          <div className="text-xl sm:text-3xl font-black text-slate-900 mt-1">
             {formatCurrency(analytics.grossSales)}
           </div>
-          <div className="mt-1 flex items-center gap-1.5 text-[11px] text-slate-500">
+          <div className="mt-1 flex items-center gap-1.5 text-xs text-slate-500 font-medium">
             <span className="text-emerald-700 font-bold">₹{formatNumber(analytics.collectedAmount, 0)}</span> collected ({analytics.collectionRatePct.toFixed(0)}%)
           </div>
         </div>
@@ -409,15 +407,15 @@ export default function ReportsPage({
         {/* Total Purchases Cost */}
         <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-2xs hover:border-slate-300 transition-all">
           <div className="flex items-center justify-between text-slate-500 mb-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Total Purchases</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Total Purchases</span>
             <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
               <ShoppingCart className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-lg sm:text-2xl font-black text-slate-900 mt-1">
+          <div className="text-xl sm:text-3xl font-black text-slate-900 mt-1">
             {formatCurrency(analytics.totalPurchases)}
           </div>
-          <div className="mt-1 flex items-center gap-1.5 text-[11px] text-slate-500">
+          <div className="mt-1 flex items-center gap-1.5 text-xs text-slate-500 font-medium">
             <span>{filteredPurchases.length} vendor batches</span>
           </div>
         </div>
@@ -425,19 +423,19 @@ export default function ReportsPage({
         {/* Estimated Gross Profit */}
         <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-2xs hover:border-slate-300 transition-all">
           <div className="flex items-center justify-between text-slate-500 mb-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Gross Margin</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Gross Margin</span>
             <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
               analytics.grossProfit >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
             }`}>
               {analytics.grossProfit >= 0 ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
             </div>
           </div>
-          <div className={`text-lg sm:text-2xl font-black mt-1 ${
+          <div className={`text-xl sm:text-3xl font-black mt-1 ${
             analytics.grossProfit >= 0 ? 'text-emerald-700' : 'text-rose-700'
           }`}>
             {formatCurrency(analytics.grossProfit)}
           </div>
-          <div className="mt-1 text-[11px] font-bold text-slate-500">
+          <div className="mt-1 text-xs font-bold text-slate-500">
             {analytics.profitMarginPct.toFixed(1)}% profit margin
           </div>
         </div>
@@ -445,15 +443,15 @@ export default function ReportsPage({
         {/* Volume Dispatched (Material Weight) */}
         <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-2xs hover:border-slate-300 transition-all">
           <div className="flex items-center justify-between text-slate-500 mb-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Volume Sold</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Volume Sold</span>
             <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
               <Package className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-lg sm:text-2xl font-black text-purple-950 mt-1">
+          <div className="text-xl sm:text-3xl font-black text-purple-950 mt-1">
             {formatNumber(analytics.totalWeightSoldKg, 1)} <span className="text-sm font-bold text-slate-500">Kg</span>
           </div>
-          <div className="mt-1 text-[11px] text-slate-500">
+          <div className="mt-1 text-xs text-slate-500 font-medium">
             + {formatNumber(analytics.totalPcsSold, 0)} poly bags sold
           </div>
         </div>
@@ -466,27 +464,27 @@ export default function ReportsPage({
             <IndianRupee className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide">GST Tax Overview (GSTR-3B Summary)</h3>
-            <p className="text-[11px] text-slate-500">Output tax on sales vs. estimated input tax credit</p>
+            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">GST Tax Overview (GSTR-3B Summary)</h3>
+            <p className="text-xs text-slate-500">Output tax on sales vs. estimated input tax credit</p>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-6 text-xs">
+        <div className="flex flex-wrap items-center gap-6 text-sm">
           <div>
-            <span className="text-slate-400 block text-[10px] uppercase font-bold">Taxable Turnover</span>
-            <span className="font-extrabold text-slate-900 text-sm">{formatCurrency(analytics.taxableSales)}</span>
+            <span className="text-slate-400 block text-xs uppercase font-bold tracking-wider">Taxable Turnover</span>
+            <span className="font-extrabold text-slate-900 text-sm sm:text-base">{formatCurrency(analytics.taxableSales)}</span>
           </div>
           <div>
-            <span className="text-slate-400 block text-[10px] uppercase font-bold">Output GST (Collected)</span>
-            <span className="font-extrabold text-indigo-700 text-sm">{formatCurrency(analytics.outputGst)}</span>
+            <span className="text-slate-400 block text-xs uppercase font-bold tracking-wider">Output GST (Collected)</span>
+            <span className="font-extrabold text-indigo-700 text-sm sm:text-base">{formatCurrency(analytics.outputGst)}</span>
           </div>
           <div>
-            <span className="text-slate-400 block text-[10px] uppercase font-bold">Est. Input GST (Purchases)</span>
-            <span className="font-extrabold text-emerald-700 text-sm">{formatCurrency(analytics.estimatedInputGst)}</span>
+            <span className="text-slate-400 block text-xs uppercase font-bold tracking-wider">Est. Input GST (Purchases)</span>
+            <span className="font-extrabold text-emerald-700 text-sm sm:text-base">{formatCurrency(analytics.estimatedInputGst)}</span>
           </div>
           <div className="pl-4 border-l border-slate-200">
-            <span className="text-slate-400 block text-[10px] uppercase font-bold">Net GST Payable</span>
-            <span className="font-extrabold text-slate-900 text-sm">{formatCurrency(analytics.netGstPayable)}</span>
+            <span className="text-slate-400 block text-xs uppercase font-bold tracking-wider">Net GST Payable</span>
+            <span className="font-extrabold text-slate-900 text-sm sm:text-base">{formatCurrency(analytics.netGstPayable)}</span>
           </div>
         </div>
       </div>
@@ -495,7 +493,7 @@ export default function ReportsPage({
       <div className="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
         {/* Tab Headers */}
         <div className="p-3 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 no-print">
-          <div className="flex flex-wrap items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-2">
             {[
               { id: 'sales', label: 'Sales Report', count: filteredInvoices.length, icon: FileText },
               { id: 'purchases', label: 'Purchases Ledger', count: filteredPurchases.length, icon: Truck },
@@ -508,16 +506,16 @@ export default function ReportsPage({
                 <button
                   key={tab.id}
                   onClick={() => setActiveReportTab(tab.id)}
-                  className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${
                     isActive
                       ? 'bg-indigo-600 text-white shadow-2xs'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
                   }`}
                 >
-                  <Icon className="w-3.5 h-3.5" />
+                  <Icon className="w-4 h-4" />
                   <span>{tab.label}</span>
-                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
-                    isActive ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-600'
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                    isActive ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'
                   }`}>
                     {tab.count}
                   </span>
@@ -526,7 +524,7 @@ export default function ReportsPage({
             })}
           </div>
 
-          <span className="text-[11px] text-slate-400 font-medium">
+          <span className="text-xs text-slate-500 font-medium">
             Showing filtered records
           </span>
         </div>
@@ -534,8 +532,8 @@ export default function ReportsPage({
         {/* TAB 1: Detailed Sales Report */}
         {activeReportTab === 'sales' && (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 text-slate-600 uppercase text-[10px] font-bold tracking-wider border-b border-slate-200">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-50 text-slate-600 uppercase text-xs font-bold tracking-wider border-b border-slate-200">
                 <tr>
                   <th className="py-3 px-4">Invoice #</th>
                   <th className="py-3 px-4">Date</th>
@@ -575,30 +573,30 @@ export default function ReportsPage({
 
                     return (
                       <tr key={inv.id} className="hover:bg-slate-50/80 transition-colors">
-                        <td className="py-3 px-4 font-mono font-bold text-indigo-700">
+                        <td className="py-3 px-4 font-mono font-bold text-indigo-700 text-sm">
                           {inv.invoiceNumber}
                         </td>
-                        <td className="py-3 px-4 text-slate-600 whitespace-nowrap">
+                        <td className="py-3 px-4 text-slate-600 whitespace-nowrap text-sm">
                           {formatDate(inv.date)}
                         </td>
                         <td className="py-3 px-4">
-                          <div className="font-bold text-slate-900">{inv.customer?.name || 'Walk-in'}</div>
-                          {inv.customer?.phone && <div className="text-[10px] text-slate-400">{inv.customer.phone}</div>}
+                          <div className="font-bold text-slate-900 text-sm">{inv.customer?.name || 'Walk-in'}</div>
+                          {inv.customer?.phone && <div className="text-xs text-slate-500 font-medium">{inv.customer.phone}</div>}
                         </td>
-                        <td className="py-3 px-4 text-center text-slate-600">
+                        <td className="py-3 px-4 text-center text-slate-600 text-sm">
                           {inv.items?.length || 0}
                         </td>
-                        <td className="py-3 px-4 text-right font-medium text-slate-700">
+                        <td className="py-3 px-4 text-right font-medium text-slate-700 text-sm">
                           {formatCurrency(base)}
                         </td>
-                        <td className="py-3 px-4 text-right text-indigo-700 font-medium">
+                        <td className="py-3 px-4 text-right text-indigo-700 font-medium text-sm">
                           {formatCurrency(tax)}
                         </td>
-                        <td className="py-3 px-4 text-right font-bold text-slate-900">
+                        <td className="py-3 px-4 text-right font-bold text-slate-900 text-sm sm:text-base">
                           {formatCurrency(grand)}
                         </td>
                         <td className="py-3 px-4 text-center">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                          <span className={`px-2.5 py-1 rounded-md text-xs font-bold uppercase ${
                             inv.paymentStatus === 'paid'
                               ? 'bg-emerald-50 text-emerald-700'
                               : inv.paymentStatus === 'partial'
@@ -613,7 +611,7 @@ export default function ReportsPage({
                   })
                 )}
               </tbody>
-              <tfoot className="bg-slate-50 font-bold border-t border-slate-200">
+              <tfoot className="bg-slate-50 font-bold border-t border-slate-200 text-sm">
                 <tr>
                   <td colSpan="4" className="py-3 px-4 text-slate-800">
                     Total ({filteredInvoices.length} Bills)
@@ -624,7 +622,7 @@ export default function ReportsPage({
                   <td className="py-3 px-4 text-right text-indigo-700">
                     {formatCurrency(analytics.outputGst)}
                   </td>
-                  <td className="py-3 px-4 text-right text-slate-900 font-extrabold">
+                  <td className="py-3 px-4 text-right text-slate-900 font-black text-base">
                     {formatCurrency(analytics.grossSales)}
                   </td>
                   <td></td>
@@ -637,8 +635,8 @@ export default function ReportsPage({
         {/* TAB 2: Purchases & Vendor Ledger */}
         {activeReportTab === 'purchases' && (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 text-slate-600 uppercase text-[10px] font-bold tracking-wider border-b border-slate-200">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-50 text-slate-600 uppercase text-xs font-bold tracking-wider border-b border-slate-200">
                 <tr>
                   <th className="py-3 px-4">Purchase ID</th>
                   <th className="py-3 px-4">Date</th>
@@ -660,29 +658,29 @@ export default function ReportsPage({
                 ) : (
                   filteredPurchases.map(pur => (
                     <tr key={pur.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-3 px-4 font-mono font-bold text-emerald-700">
+                      <td className="py-3 px-4 font-mono font-bold text-emerald-700 text-sm">
                         {pur.purchaseNumber}
                       </td>
-                      <td className="py-3 px-4 text-slate-600 whitespace-nowrap">
+                      <td className="py-3 px-4 text-slate-600 whitespace-nowrap text-sm">
                         {formatDate(pur.purchaseDate || pur.date)}
                       </td>
-                      <td className="py-3 px-4 font-bold text-slate-900">
+                      <td className="py-3 px-4 font-bold text-slate-900 text-sm">
                         {pur.supplierName || pur.vendorName || 'Vendor'}
                       </td>
-                      <td className="py-3 px-4 text-slate-700">
+                      <td className="py-3 px-4 text-slate-700 text-sm font-medium">
                         {pur.productName}
                       </td>
-                      <td className="py-3 px-4 text-right font-medium text-slate-800">
-                        {pur.quantity} {pur.unit}
+                      <td className="py-3 px-4 text-right font-semibold text-slate-900 text-sm">
+                        {pur.quantity} <span className="text-xs uppercase text-slate-500 font-bold">{pur.unit}</span>
                       </td>
-                      <td className="py-3 px-4 text-right text-slate-600">
+                      <td className="py-3 px-4 text-right text-slate-700 text-sm">
                         ₹{pur.unitCost}/{pur.unit}
                       </td>
-                      <td className="py-3 px-4 text-right font-bold text-slate-900">
+                      <td className="py-3 px-4 text-right font-black text-slate-900 text-sm sm:text-base">
                         {formatCurrency(pur.totalAmount)}
                       </td>
                       <td className="py-3 px-4 text-center">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                        <span className={`px-2.5 py-1 rounded-md text-xs font-bold uppercase ${
                           pur.paymentStatus === 'paid'
                             ? 'bg-emerald-50 text-emerald-700'
                             : 'bg-amber-50 text-amber-700'
@@ -694,12 +692,12 @@ export default function ReportsPage({
                   ))
                 )}
               </tbody>
-              <tfoot className="bg-slate-50 font-bold border-t border-slate-200">
+              <tfoot className="bg-slate-50 font-bold border-t border-slate-200 text-sm">
                 <tr>
                   <td colSpan="6" className="py-3 px-4 text-slate-800">
                     Total Purchases ({filteredPurchases.length} Batches)
                   </td>
-                  <td className="py-3 px-4 text-right text-slate-900 font-extrabold">
+                  <td className="py-3 px-4 text-right text-slate-900 font-black text-base">
                     {formatCurrency(analytics.totalPurchases)}
                   </td>
                   <td></td>
@@ -712,8 +710,8 @@ export default function ReportsPage({
         {/* TAB 3: Product Performance Breakdown */}
         {activeReportTab === 'products' && (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 text-slate-600 uppercase text-[10px] font-bold tracking-wider border-b border-slate-200">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-50 text-slate-600 uppercase text-xs font-bold tracking-wider border-b border-slate-200">
                 <tr>
                   <th className="py-3 px-4">Rank</th>
                   <th className="py-3 px-4">Product Name</th>
@@ -733,22 +731,22 @@ export default function ReportsPage({
                 ) : (
                   productPerformance.map((prod, index) => (
                     <tr key={prod.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-3 px-4 font-bold text-slate-400">
+                      <td className="py-3 px-4 font-bold text-slate-400 text-sm">
                         #{index + 1}
                       </td>
-                      <td className="py-3 px-4 font-bold text-slate-900">
+                      <td className="py-3 px-4 font-bold text-slate-900 text-sm">
                         {prod.name}
                       </td>
-                      <td className="py-3 px-4 text-center text-slate-600">
+                      <td className="py-3 px-4 text-center text-slate-600 text-sm font-medium">
                         {prod.orderCount} orders
                       </td>
-                      <td className="py-3 px-4 text-right font-medium text-slate-800">
+                      <td className="py-3 px-4 text-right font-semibold text-slate-800 text-sm">
                         {prod.quantityKg > 0 ? `${formatNumber(prod.quantityKg, 1)} Kg` : '-'}
                       </td>
-                      <td className="py-3 px-4 text-right font-medium text-slate-800">
+                      <td className="py-3 px-4 text-right font-semibold text-slate-800 text-sm">
                         {prod.quantityPcs > 0 ? `${formatNumber(prod.quantityPcs, 0)} Pcs` : '-'}
                       </td>
-                      <td className="py-3 px-4 text-right font-bold text-indigo-700">
+                      <td className="py-3 px-4 text-right font-black text-indigo-700 text-sm sm:text-base">
                         {formatCurrency(prod.revenue)}
                       </td>
                     </tr>
@@ -762,8 +760,8 @@ export default function ReportsPage({
         {/* TAB 4: Customer Receivables Ledger */}
         {activeReportTab === 'customers' && (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 text-slate-600 uppercase text-[10px] font-bold tracking-wider border-b border-slate-200">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-50 text-slate-600 uppercase text-xs font-bold tracking-wider border-b border-slate-200">
                 <tr>
                   <th className="py-3 px-4">Customer Name</th>
                   <th className="py-3 px-4">Contact</th>
@@ -784,32 +782,32 @@ export default function ReportsPage({
                 ) : (
                   customerSummary.map((cust, idx) => (
                     <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-3 px-4 font-bold text-slate-900">
+                      <td className="py-3 px-4 font-bold text-slate-900 text-sm">
                         {cust.name}
                       </td>
-                      <td className="py-3 px-4 text-slate-600">
+                      <td className="py-3 px-4 text-slate-600 text-sm">
                         {cust.phone || '-'}
                       </td>
-                      <td className="py-3 px-4 font-mono text-[11px] text-slate-600">
+                      <td className="py-3 px-4 font-mono text-xs font-semibold text-slate-700">
                         {cust.gstin || '-'}
                       </td>
-                      <td className="py-3 px-4 text-center text-slate-600">
+                      <td className="py-3 px-4 text-center text-slate-600 text-sm font-medium">
                         {cust.billsCount}
                       </td>
-                      <td className="py-3 px-4 text-right font-medium text-slate-800">
+                      <td className="py-3 px-4 text-right font-semibold text-slate-800 text-sm">
                         {formatCurrency(cust.totalBilled)}
                       </td>
-                      <td className="py-3 px-4 text-right text-emerald-700 font-medium">
+                      <td className="py-3 px-4 text-right text-emerald-700 font-semibold text-sm">
                         {formatCurrency(cust.totalPaid)}
                       </td>
-                      <td className="py-3 px-4 text-right font-bold text-amber-700">
+                      <td className="py-3 px-4 text-right font-black text-amber-700 text-sm sm:text-base">
                         {cust.outstandingBalance > 0 ? formatCurrency(cust.outstandingBalance) : '₹0.00'}
                       </td>
                     </tr>
                   ))
                 )}
               </tbody>
-              <tfoot className="bg-slate-50 font-bold border-t border-slate-200">
+              <tfoot className="bg-slate-50 font-bold border-t border-slate-200 text-sm">
                 <tr>
                   <td colSpan="4" className="py-3 px-4 text-slate-800">
                     Total Outstanding Receivables
@@ -820,7 +818,7 @@ export default function ReportsPage({
                   <td className="py-3 px-4 text-right text-emerald-700">
                     {formatCurrency(analytics.collectedAmount)}
                   </td>
-                  <td className="py-3 px-4 text-right text-amber-700 font-extrabold">
+                  <td className="py-3 px-4 text-right text-amber-700 font-black text-base">
                     {formatCurrency(analytics.pendingReceivables)}
                   </td>
                 </tr>

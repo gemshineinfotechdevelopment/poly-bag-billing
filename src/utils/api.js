@@ -13,7 +13,7 @@ export async function getBackendStatus() {
     const res = await fetch(`${API_BASE}/status`, { signal: AbortSignal.timeout(3000) });
     if (!res.ok) throw new Error('Status error');
     return await res.json();
-  } catch (err) {
+  } catch {
     return {
       connected: false,
       status: 'Server Offline / Local Mode',

@@ -31,25 +31,6 @@ export const UNITS = [
   { id: 'boxes', label: 'Boxes' }
 ];
 
-export const COMMON_SIZES = [
-  { label: '6" × 8"', width: 6, length: 8, gusset: 0, desc: 'Small Items / Hardware' },
-  { label: '8" × 10"', width: 8, length: 10, gusset: 0, desc: 'Small Garments / Food' },
-  { label: '10" × 12"', width: 10, length: 12, gusset: 0, desc: 'T-Shirts / Standard' },
-  { label: '10" × 14"', width: 10, length: 14, gusset: 0, desc: 'Shirts / Documents' },
-  { label: '12" × 16"', width: 12, length: 16, gusset: 0, desc: 'Medium Apparel' },
-  { label: '14" × 18"', width: 14, length: 18, gusset: 2, desc: 'Shopping Bags' },
-  { label: '16" × 20"', width: 16, length: 20, gusset: 3, desc: 'Large Carry Bags' },
-  { label: '24" × 32"', width: 24, length: 32, gusset: 4, desc: 'Liners / Garbage' }
-];
-
-export const MICRON_PRESETS = [
-  { micron: 25, gauge: 100, label: '25 Micron (100 Gauge)' },
-  { micron: 40, gauge: 160, label: '40 Micron (160 Gauge)' },
-  { micron: 50, gauge: 200, label: '50 Micron (200 Gauge)' },
-  { micron: 75, gauge: 300, label: '75 Micron (300 Gauge)' },
-  { micron: 100, gauge: 400, label: '100 Micron (400 Gauge)' }
-];
-
 export const DEFAULT_COMPANY = {
   name: 'POLY PACK ENTERPRISES',
   tagline: 'Packaging Bags & Plastic Covers',

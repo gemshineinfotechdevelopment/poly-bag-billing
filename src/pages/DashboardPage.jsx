@@ -1,21 +1,19 @@
 import React from 'react';
 import {
-  TrendingUp, ShoppingCart, ShoppingBag, AlertTriangle, ArrowUpRight,
-  PlusCircle, Calculator, Package, CheckCircle2, Clock, IndianRupee,
-  Boxes, Users, ArrowRight, Eye, RefreshCw, BarChart3, Truck, FileText, Settings
+  TrendingUp, ShoppingCart, AlertTriangle,
+  PlusCircle, Package, CheckCircle2, Clock,
+  Boxes, ArrowRight, BarChart3, Truck, FileText, Settings
 } from 'lucide-react';
-import { formatCurrency, formatNumber, formatDate } from '../utils/formatters';
+import { formatCurrency, formatNumber } from '../utils/formatters';
 
 export default function DashboardPage({
   invoices = [],
   purchases = [],
   products = [],
-  customers = [],
   company,
   onNavigate,
   onStartNewInvoice,
-  onViewInvoice,
-  onRestockProduct
+  onViewInvoice
 }) {
   // 1. Calculate Sales Totals
   let totalSales = 0;
@@ -23,7 +21,6 @@ export default function DashboardPage({
   let totalPendingReceivables = 0;
   let totalSoldWeightKg = 0;
   let totalSoldPcs = 0;
-  let paidInvoicesCount = 0;
   let pendingInvoicesList = [];
 
   invoices.forEach(inv => {
@@ -62,8 +59,6 @@ export default function DashboardPage({
         grandTotal: grand,
         pendingAmount: pending
       });
-    } else {
-      paidInvoicesCount++;
     }
   });
 
@@ -95,16 +90,13 @@ export default function DashboardPage({
     }
   });
 
-  // Recent 5 Invoices
-  const recentInvoices = [...invoices].slice(0, 5);
-
   return (
     <div className="space-y-8 pb-16">
       {/* 1. Welcome & Business Banner */}
       <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-4 sm:p-7 text-white shadow-md border border-slate-800 flex flex-wrap items-center justify-between gap-4 sm:gap-6">
         <div>
           <div className="flex items-center gap-3 mb-2.5">
-            <span className="text-[10px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
+            <span className="text-xs uppercase font-extrabold tracking-wider px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
               Business Overview
             </span>
             <span className="text-xs text-slate-400 font-medium">
@@ -123,23 +115,23 @@ export default function DashboardPage({
         <div className="flex flex-wrap items-center gap-3 sm:gap-3.5">
           <button
             onClick={onStartNewInvoice}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
+            className="inline-flex items-center gap-2 px-4.5 py-2.5 rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-sm transition-all hover:scale-[1.02] cursor-pointer"
           >
-            <PlusCircle className="w-4 h-4" /> New Bill
+            <PlusCircle className="w-4.5 h-4.5" /> New Bill
           </button>
 
           <button
             onClick={() => onNavigate('purchases')}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-2 px-4.5 py-2.5 rounded-xl text-sm font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer"
           >
-            <Truck className="w-4 h-4 text-emerald-400" /> New Purchase
+            <Truck className="w-4.5 h-4.5 text-emerald-400" /> New Purchase
           </button>
 
           <button
             onClick={() => onNavigate('reports')}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-2 px-4.5 py-2.5 rounded-xl text-sm font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer"
           >
-            <BarChart3 className="w-4 h-4 text-indigo-400" /> Reports
+            <BarChart3 className="w-4.5 h-4.5 text-indigo-400" /> Reports
           </button>
         </div>
       </div>
@@ -147,65 +139,65 @@ export default function DashboardPage({
       {/* 2. Key Business Metrics */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-5">
         {/* Total Sales (Revenue) */}
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs hover:border-slate-300 transition-all">
-          <div className="flex items-center justify-between text-slate-500 mb-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Total Sales</span>
-            <div className="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
-              <TrendingUp className="w-4 h-4" />
+        <div className="bg-white p-4.5 sm:p-5 rounded-2xl border border-slate-200 shadow-2xs hover:border-slate-300 transition-all">
+          <div className="flex items-center justify-between text-slate-500 mb-1.5">
+            <span className="text-xs font-bold uppercase tracking-wider">Total Sales</span>
+            <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+              <TrendingUp className="w-4.5 h-4.5" />
             </div>
           </div>
-          <div className="text-lg sm:text-xl font-black text-slate-900 mt-1">
+          <div className="text-2xl sm:text-3xl font-black text-slate-900 mt-1">
             {formatCurrency(totalSales)}
           </div>
-          <div className="mt-1 flex items-center gap-1.5 text-[11px] text-slate-500">
+          <div className="mt-1.5 flex items-center gap-1.5 text-xs text-slate-500 font-medium">
             <span className="text-emerald-600 font-bold">₹{formatNumber(totalCollected, 0)}</span> collected
           </div>
         </div>
 
         {/* Total Purchases (Stock Inward) */}
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs hover:border-slate-300 transition-all">
-          <div className="flex items-center justify-between text-slate-500 mb-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Total Purchases</span>
-            <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <ShoppingCart className="w-4 h-4" />
+        <div className="bg-white p-4.5 sm:p-5 rounded-2xl border border-slate-200 shadow-2xs hover:border-slate-300 transition-all">
+          <div className="flex items-center justify-between text-slate-500 mb-1.5">
+            <span className="text-xs font-bold uppercase tracking-wider">Total Purchases</span>
+            <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <ShoppingCart className="w-4.5 h-4.5" />
             </div>
           </div>
-          <div className="text-lg sm:text-xl font-black text-slate-900 mt-1">
+          <div className="text-2xl sm:text-3xl font-black text-slate-900 mt-1">
             {formatCurrency(totalPurchases)}
           </div>
-          <div className="mt-1 flex items-center gap-1 text-[11px] text-slate-500">
+          <div className="mt-1.5 flex items-center gap-1 text-xs text-slate-500 font-medium">
             <span>{purchases.length} vendor batches</span>
           </div>
         </div>
 
         {/* Pending Receivables */}
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs hover:border-slate-300 transition-all">
-          <div className="flex items-center justify-between text-slate-500 mb-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Pending Bills</span>
+        <div className="bg-white p-4.5 sm:p-5 rounded-2xl border border-slate-200 shadow-2xs hover:border-slate-300 transition-all">
+          <div className="flex items-center justify-between text-slate-500 mb-1.5">
+            <span className="text-xs font-bold uppercase tracking-wider">Pending Bills</span>
             <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
-              <Clock className="w-4 h-4" />
+              <Clock className="w-4.5 h-4.5" />
             </div>
           </div>
-          <div className="text-lg sm:text-xl font-black text-amber-700 mt-1">
+          <div className="text-2xl sm:text-3xl font-black text-amber-700 mt-1">
             {formatCurrency(totalPendingReceivables)}
           </div>
-          <div className="mt-1 flex items-center gap-1 text-[11px] text-slate-500">
-            <span className="font-semibold text-slate-700">{pendingInvoicesList.length}</span> unpaid bills
+          <div className="mt-1.5 flex items-center gap-1 text-xs text-slate-500 font-medium">
+            <span className="font-bold text-slate-700">{pendingInvoicesList.length}</span> unpaid bills
           </div>
         </div>
 
         {/* Live Stock Value */}
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs hover:border-slate-300 transition-all">
-          <div className="flex items-center justify-between text-slate-500 mb-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Stock Valuation</span>
-            <div className="w-7 h-7 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
-              <Boxes className="w-4 h-4" />
+        <div className="bg-white p-4.5 sm:p-5 rounded-2xl border border-slate-200 shadow-2xs hover:border-slate-300 transition-all">
+          <div className="flex items-center justify-between text-slate-500 mb-1.5">
+            <span className="text-xs font-bold uppercase tracking-wider">Stock Valuation</span>
+            <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
+              <Boxes className="w-4.5 h-4.5" />
             </div>
           </div>
-          <div className="text-lg sm:text-xl font-black text-purple-900 mt-1">
+          <div className="text-2xl sm:text-3xl font-black text-purple-900 mt-1">
             {formatCurrency(totalStockValue)}
           </div>
-          <div className="mt-1 flex items-center justify-between text-[11px]">
+          <div className="mt-1.5 flex items-center justify-between text-xs font-medium">
             <span className="text-slate-500">{products.length} catalog items</span>
             {lowStockProducts.length > 0 && (
               <span className="text-rose-600 font-bold">{lowStockProducts.length} low</span>
@@ -215,31 +207,31 @@ export default function DashboardPage({
       </div>
 
       {/* 3. Operational Poly Bag Volume Stats Bar */}
-      <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-2xs flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-700 shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-700 shrink-0">
             <Package className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-xs font-bold text-slate-900">Total Bag Dispatch Volume</h3>
-            <p className="text-[11px] text-slate-500">Total bags & material delivered across all sales bills</p>
+            <h3 className="text-sm font-bold text-slate-900">Total Bag Dispatch Volume</h3>
+            <p className="text-xs text-slate-500">Total bags & material delivered across all sales bills</p>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-5 text-xs">
+        <div className="flex flex-wrap items-center gap-6 text-sm">
           <div className="flex items-baseline gap-1.5">
             <span className="text-slate-500 font-medium">Total Weight:</span>
-            <span className="font-extrabold text-slate-900 text-sm">{formatNumber(totalSoldWeightKg, 1)} kg</span>
+            <span className="font-extrabold text-slate-900 text-base">{formatNumber(totalSoldWeightKg, 1)} kg</span>
           </div>
 
           <div className="flex items-baseline gap-1.5">
             <span className="text-slate-500 font-medium">Total Quantity:</span>
-            <span className="font-extrabold text-slate-900 text-sm">{formatNumber(totalSoldPcs, 0)} pcs</span>
+            <span className="font-extrabold text-slate-900 text-base">{formatNumber(totalSoldPcs, 0)} pcs</span>
           </div>
 
           <div className="flex items-baseline gap-1.5">
             <span className="text-slate-500 font-medium">Estimated Gross:</span>
-            <span className={`font-extrabold text-sm ${estimatedProfit >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}>
+            <span className={`font-extrabold text-base ${estimatedProfit >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}>
               {formatCurrency(estimatedProfit)}
             </span>
           </div>
@@ -252,33 +244,33 @@ export default function DashboardPage({
           <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500">
             Navigation
           </h2>
-          <span className="text-[11px] text-slate-400 font-medium">4 Core Business Modules</span>
+          <span className="text-xs text-slate-400 font-medium">4 Core Business Modules</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
           {/* Card 1: Selling & Bills */}
           <div
             onClick={() => onNavigate('invoices')}
-            className="group bg-white p-4 rounded-xl border border-slate-200 shadow-2xs hover:border-indigo-400 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
+            className="group bg-white p-4.5 rounded-2xl border border-slate-200 shadow-2xs hover:border-indigo-400 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
           >
             <div>
               <div className="flex items-center justify-between mb-3">
-                <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                <div className="w-11 h-11 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-colors">
                   <FileText className="w-5 h-5" />
                 </div>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700">
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700">
                   {invoices.length} Bills
                 </span>
               </div>
-              <h3 className="font-bold text-sm text-slate-900 group-hover:text-indigo-600 transition-colors">
+              <h3 className="font-bold text-base text-slate-900 group-hover:text-indigo-600 transition-colors">
                 Selling & Bills
               </h3>
-              <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+              <p className="text-xs text-slate-500 mt-1 leading-normal">
                 Generate, edit, view & print customer GST bills
               </p>
             </div>
 
-            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-indigo-600">
+            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-sm font-bold text-indigo-600">
               <span>Open Selling</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </div>
@@ -287,26 +279,26 @@ export default function DashboardPage({
           {/* Card 2: Purchases */}
           <div
             onClick={() => onNavigate('purchases')}
-            className="group bg-white p-4 rounded-xl border border-slate-200 shadow-2xs hover:border-emerald-400 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
+            className="group bg-white p-4.5 rounded-2xl border border-slate-200 shadow-2xs hover:border-emerald-400 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
           >
             <div>
               <div className="flex items-center justify-between mb-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                <div className="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors">
                   <Truck className="w-5 h-5" />
                 </div>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">
                   {purchases.length} Batches
                 </span>
               </div>
-              <h3 className="font-bold text-sm text-slate-900 group-hover:text-emerald-700 transition-colors">
+              <h3 className="font-bold text-base text-slate-900 group-hover:text-emerald-700 transition-colors">
                 Purchases
               </h3>
-              <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+              <p className="text-xs text-slate-500 mt-1 leading-normal">
                 Record supplier bills & add inward stock
               </p>
             </div>
 
-            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-emerald-700">
+            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-sm font-bold text-emerald-700">
               <span>Open Purchases</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </div>
@@ -315,28 +307,28 @@ export default function DashboardPage({
           {/* Card 3: Products */}
           <div
             onClick={() => onNavigate('products')}
-            className="group bg-white p-4 rounded-xl border border-slate-200 shadow-2xs hover:border-purple-400 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
+            className="group bg-white p-4.5 rounded-2xl border border-slate-200 shadow-2xs hover:border-purple-400 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
           >
             <div>
               <div className="flex items-center justify-between mb-3">
-                <div className="w-10 h-10 rounded-xl bg-purple-50 border border-purple-100 text-purple-600 flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                <div className="w-11 h-11 rounded-xl bg-purple-50 border border-purple-100 text-purple-600 flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition-colors">
                   <Boxes className="w-5 h-5" />
                 </div>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
                   lowStockProducts.length > 0 ? 'bg-amber-100 text-amber-800' : 'bg-purple-50 text-purple-700'
                 }`}>
                   {products.length} Products
                 </span>
               </div>
-              <h3 className="font-bold text-sm text-slate-900 group-hover:text-purple-700 transition-colors">
+              <h3 className="font-bold text-base text-slate-900 group-hover:text-purple-700 transition-colors">
                 Products
               </h3>
-              <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+              <p className="text-xs text-slate-500 mt-1 leading-normal">
                 Catalog, live stock tracking & restock alerts
               </p>
             </div>
 
-            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-purple-700">
+            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-sm font-bold text-purple-700">
               <span>Open Products</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </div>
@@ -345,26 +337,26 @@ export default function DashboardPage({
           {/* Card 4: Settings */}
           <div
             onClick={() => onNavigate('settings')}
-            className="group bg-white p-4 rounded-xl border border-slate-200 shadow-2xs hover:border-slate-400 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
+            className="group bg-white p-4.5 rounded-2xl border border-slate-200 shadow-2xs hover:border-slate-400 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
           >
             <div>
               <div className="flex items-center justify-between mb-3">
-                <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 text-slate-600 flex items-center justify-center group-hover:bg-slate-800 group-hover:text-white transition-colors">
+                <div className="w-11 h-11 rounded-xl bg-slate-100 border border-slate-200 text-slate-600 flex items-center justify-center group-hover:bg-slate-800 group-hover:text-white transition-colors">
                   <Settings className="w-5 h-5" />
                 </div>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
                   Profile
                 </span>
               </div>
-              <h3 className="font-bold text-sm text-slate-900 group-hover:text-slate-800 transition-colors">
+              <h3 className="font-bold text-base text-slate-900 group-hover:text-slate-800 transition-colors">
                 Settings
               </h3>
-              <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+              <p className="text-xs text-slate-500 mt-1 leading-normal">
                 Company name, address, GSTIN & print format
               </p>
             </div>
 
-            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-slate-700">
+            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-sm font-bold text-slate-700">
               <span>Open Settings</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </div>
@@ -375,25 +367,25 @@ export default function DashboardPage({
       {/* 5. Two Column Alerts Row: Low Stock Warnings & Pending Receivables */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Low Stock Alert Box */}
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
-          <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-slate-100">
-            <div className="flex items-center gap-1.5 text-amber-800">
-              <AlertTriangle className="w-4 h-4 text-amber-600" />
-              <h3 className="text-xs font-bold uppercase tracking-wider">
+        <div className="bg-white p-4.5 rounded-2xl border border-slate-200 shadow-2xs">
+          <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-slate-100">
+            <div className="flex items-center gap-2 text-amber-800">
+              <AlertTriangle className="w-4.5 h-4.5 text-amber-600" />
+              <h3 className="text-sm font-bold uppercase tracking-wider">
                 Low Stock Warnings ({lowStockProducts.length})
               </h3>
             </div>
             <button
               onClick={() => onNavigate('products')}
-              className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800"
+              className="text-xs font-bold text-indigo-600 hover:text-indigo-800"
             >
               Open Products →
             </button>
           </div>
 
           {lowStockProducts.length === 0 ? (
-            <div className="py-4 text-center text-xs text-emerald-700 font-medium flex items-center justify-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4" /> All product stock levels are healthy!
+            <div className="py-4 text-center text-sm text-emerald-700 font-medium flex items-center justify-center gap-1.5">
+              <CheckCircle2 className="w-4.5 h-4.5" /> All product stock levels are healthy!
             </div>
           ) : (
             <div className="space-y-2">
@@ -403,18 +395,18 @@ export default function DashboardPage({
                 return (
                   <div
                     key={p.id}
-                    className="p-2.5 rounded-lg border border-slate-100 bg-slate-50/70 flex items-center justify-between gap-2"
+                    className="p-3 rounded-xl border border-slate-100 bg-slate-50/70 flex items-center justify-between gap-3"
                   >
                     <div className="min-w-0">
-                      <p className="text-xs font-bold text-slate-800 truncate">{p.name}</p>
-                      <span className={`text-[10px] font-bold ${isOut ? 'text-rose-600' : 'text-amber-700'}`}>
+                      <p className="text-sm font-bold text-slate-800 truncate">{p.name}</p>
+                      <span className={`text-xs font-semibold ${isOut ? 'text-rose-600' : 'text-amber-700'}`}>
                         {isOut ? 'Out of Stock (0 ' + p.unit + ')' : `Only ${stock} ${p.unit} remaining`}
                       </span>
                     </div>
 
                     <button
                       onClick={() => onNavigate('products')}
-                      className="px-2 py-1 text-[11px] font-bold text-indigo-600 hover:text-white hover:bg-indigo-600 border border-indigo-200 rounded-md transition-all shrink-0 cursor-pointer"
+                      className="px-3 py-1.5 text-xs font-bold text-indigo-600 hover:text-white hover:bg-indigo-600 border border-indigo-200 rounded-lg transition-all shrink-0 cursor-pointer"
                     >
                       + Restock
                     </button>
@@ -426,41 +418,41 @@ export default function DashboardPage({
         </div>
 
         {/* Quick Pending Receivables Box */}
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
-          <div className="flex items-center justify-between mb-2 pb-2 border-b border-slate-100">
-            <div className="flex items-center gap-1.5 text-slate-800">
-              <Clock className="w-3.5 h-3.5 text-amber-500" />
-              <h3 className="text-xs font-bold uppercase tracking-wider">
+        <div className="bg-white p-4.5 rounded-2xl border border-slate-200 shadow-2xs">
+          <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-slate-100">
+            <div className="flex items-center gap-2 text-slate-800">
+              <Clock className="w-4.5 h-4.5 text-amber-500" />
+              <h3 className="text-sm font-bold uppercase tracking-wider">
                 Unpaid Invoices ({pendingInvoicesList.length})
               </h3>
             </div>
-            <span className="text-xs font-extrabold text-amber-700">
+            <span className="text-sm font-extrabold text-amber-700">
               {formatCurrency(totalPendingReceivables)}
             </span>
           </div>
 
           {pendingInvoicesList.length === 0 ? (
-            <div className="py-4 text-center text-xs text-emerald-700 font-medium flex items-center justify-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4" /> No pending customer bills!
+            <div className="py-4 text-center text-sm text-emerald-700 font-medium flex items-center justify-center gap-1.5">
+              <CheckCircle2 className="w-4.5 h-4.5" /> No pending customer bills!
             </div>
           ) : (
-            <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
+            <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
               {pendingInvoicesList.slice(0, 4).map(inv => (
                 <div
                   key={inv.id}
                   onClick={() => onViewInvoice(inv)}
-                  className="p-2 rounded-lg hover:bg-amber-50/50 border border-slate-100 flex items-center justify-between text-xs cursor-pointer transition-colors"
+                  className="p-3 rounded-xl hover:bg-amber-50/50 border border-slate-100 flex items-center justify-between text-sm cursor-pointer transition-colors"
                 >
                   <div>
                     <div className="flex items-center gap-1.5">
                       <span className="font-bold text-slate-900">{inv.customer?.name || 'Walk-in'}</span>
-                      <span className="text-[10px] text-slate-400">({inv.invoiceNumber})</span>
+                      <span className="text-xs text-slate-500 font-mono">({inv.invoiceNumber})</span>
                     </div>
                     {inv.customer?.phone && (
-                      <p className="text-[10px] text-slate-500">{inv.customer.phone}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">{inv.customer.phone}</p>
                     )}
                   </div>
-                  <span className="font-extrabold text-amber-800">
+                  <span className="font-black text-amber-800 text-sm sm:text-base">
                     {formatCurrency(inv.pendingAmount)}
                   </span>
                 </div>

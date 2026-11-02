@@ -180,7 +180,7 @@ app.get('/api/status', async (req, res) => {
         purchases: await Purchase.countDocuments(),
         customers: await Customer.countDocuments()
       };
-    } catch (_) {}
+    } catch {}
   }
 
   res.json({
