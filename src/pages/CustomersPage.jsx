@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PlusCircle, Edit2, Trash2, Search, Phone, MapPin } from 'lucide-react';
+import { PlusCircle, Edit2, Trash2, Search, Phone, MapPin, Users } from 'lucide-react';
 
 export default function CustomersPage({
   customers = [],
@@ -94,74 +94,93 @@ export default function CustomersPage({
         />
       </div>
 
-      {/* Customers Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-        {filtered.map(cust => (
-          <div
-            key={cust.id}
-            className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs hover:border-slate-300 transition-all flex flex-col justify-between"
+      {/* Customers Cards or Empty State */}
+      {filtered.length === 0 ? (
+        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-2xs">
+          <Users className="w-10 h-10 text-slate-300 mx-auto mb-2.5" />
+          <h3 className="text-base font-bold text-slate-700">No customers found</h3>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-sm mx-auto">
+            {searchTerm
+              ? 'No registered buyers match your search query.'
+              : 'Add your first customer to autofill billing and GST info easily on new bills!'}
+          </p>
+          <button
+            type="button"
+            onClick={handleOpenAdd}
+            className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs sm:text-sm font-bold shadow-2xs transition-all hover:scale-[1.02] cursor-pointer"
           >
-            <div>
-              <div className="flex items-start justify-between gap-2">
-                <h3 className="font-bold text-slate-900 text-base">{cust.name}</h3>
-                {cust.gstin && (
-                  <span className="text-xs font-mono px-2 py-0.5 bg-slate-100 text-slate-700 rounded font-semibold shrink-0">
-                    {cust.gstin}
-                  </span>
+            <PlusCircle className="w-4 h-4" /> Add Customer
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+          {filtered.map(cust => (
+            <div
+              key={cust.id}
+              className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs hover:border-slate-300 transition-all flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="font-bold text-slate-900 text-base">{cust.name}</h3>
+                  {cust.gstin && (
+                    <span className="text-xs font-mono px-2 py-0.5 bg-slate-100 text-slate-700 rounded font-semibold shrink-0">
+                      {cust.gstin}
+                    </span>
+                  )}
+                </div>
+
+                {cust.contactPerson && (
+                  <p className="text-xs font-semibold text-indigo-700 mt-0.5">Attn: {cust.contactPerson}</p>
                 )}
+
+                <div className="mt-3 space-y-1.5 text-xs text-slate-600">
+                  {cust.phone && (
+                    <div className="flex items-center gap-2 text-sm text-slate-700 font-medium">
+                      <Phone className="w-3.5 h-3.5 text-slate-400" />
+                      <span>{cust.phone}</span>
+                    </div>
+                  )}
+                  {cust.billingAddress && (
+                    <div className="flex items-start gap-1.5 pt-1.5 border-t border-slate-100 text-xs">
+                      <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
+                      <span className="text-slate-500 line-clamp-2">{cust.billingAddress}</span>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {cust.contactPerson && (
-                <p className="text-xs font-semibold text-indigo-700 mt-0.5">Attn: {cust.contactPerson}</p>
-              )}
+              <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                {onSelectCustomerForNewInvoice && (
+                  <button
+                    type="button"
+                    onClick={() => onSelectCustomerForNewInvoice(cust)}
+                    className="text-xs font-bold text-indigo-600 hover:text-indigo-800 cursor-pointer"
+                  >
+                    Create Bill →
+                  </button>
+                )}
 
-              <div className="mt-3 space-y-1.5 text-xs text-slate-600">
-                {cust.phone && (
-                  <div className="flex items-center gap-2 text-sm text-slate-700 font-medium">
-                    <Phone className="w-3.5 h-3.5 text-slate-400" />
-                    <span>{cust.phone}</span>
-                  </div>
-                )}
-                {cust.billingAddress && (
-                  <div className="flex items-start gap-1.5 pt-1.5 border-t border-slate-100 text-xs">
-                    <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
-                    <span className="text-slate-500 line-clamp-2">{cust.billingAddress}</span>
-                  </div>
-                )}
+                <div className="flex items-center gap-1 ml-auto">
+                  <button
+                    onClick={() => handleOpenEdit(cust)}
+                    className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg transition-colors cursor-pointer"
+                    title="Edit"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => onDeleteCustomer(cust.id)}
+                    className="p-1.5 text-red-400 hover:text-red-600 rounded-lg transition-colors cursor-pointer"
+                    title="Delete"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             </div>
-
-            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
-              {onSelectCustomerForNewInvoice && (
-                <button
-                  type="button"
-                  onClick={() => onSelectCustomerForNewInvoice(cust)}
-                  className="text-xs font-bold text-indigo-600 hover:text-indigo-800 cursor-pointer"
-                >
-                  Create Bill →
-                </button>
-              )}
-
-              <div className="flex items-center gap-1 ml-auto">
-                <button
-                  onClick={() => handleOpenEdit(cust)}
-                  className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg transition-colors cursor-pointer"
-                  title="Edit"
-                >
-                  <Edit2 className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => onDeleteCustomer(cust.id)}
-                  className="p-1.5 text-red-400 hover:text-red-600 rounded-lg transition-colors cursor-pointer"
-                  title="Delete"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Add / Edit Modal */}
       {isEditing && (
