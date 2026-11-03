@@ -530,12 +530,12 @@ app.post('/api/seed', async (req, res) => {
 const distPath = path.join(__dirname, '../dist');
 app.use(express.static(distPath));
 
-// For any non-API request, send back React index.html for client-side routing
-app.get('*', (req, res, next) => {
-  if (req.path.startsWith('/api')) {
-    return next();
+// For any non-API request, send back React index.html for client-side routing (Express 5 compatible)
+app.use((req, res, next) => {
+  if (req.method === 'GET' && !req.path.startsWith('/api')) {
+    return res.sendFile(path.join(distPath, 'index.html'));
   }
-  res.sendFile(path.join(distPath, 'index.html'));
+  next();
 });
 
 app.listen(PORT, () => {
