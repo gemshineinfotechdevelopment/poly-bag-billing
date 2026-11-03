@@ -9,12 +9,28 @@ export default function PurchasesPage({
   purchases = [],
   products = [],
   onSavePurchase,
-  onDeletePurchase
+  onDeletePurchase,
+  autoOpenAdd = false,
+  onResetAutoOpen,
+  onCancelToPrevious
 }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'paid', 'pending'
   const [sortOrder, setSortOrder] = useState('desc'); // 'desc' (latest first) | 'asc' (101 first)
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(autoOpenAdd);
+  React.useEffect(() => {
+    if (autoOpenAdd) {
+      setFormData(initialForm);
+      setIsModalOpen(true);
+      if (onResetAutoOpen) onResetAutoOpen();
+    }
+  }, [autoOpenAdd]);
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    if (onCancelToPrevious) onCancelToPrevious();
+  };
+
 
   const nextPurchaseNo = generateNextPurchaseNumber(purchases);
 
@@ -316,7 +332,7 @@ export default function PurchasesPage({
               </div>
               <button
                 type="button"
-                onClick={() => setIsModalOpen(false)}
+                onClick={handleCloseModal}
                 className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg"
               >
                 <X className="w-4 h-4" />
@@ -446,7 +462,7 @@ export default function PurchasesPage({
               <div className="pt-3 flex justify-end gap-2 border-t border-slate-100">
                 <button
                   type="button"
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={handleCloseModal}
                   className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg font-semibold cursor-pointer"
                 >
                   Cancel

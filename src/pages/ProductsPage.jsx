@@ -11,7 +11,11 @@ export default function ProductsPage({
   onSaveProduct,
   onDeleteProduct,
   onAdjustStock,
-  onSelectProductForNewInvoice
+  onSelectProductForNewInvoice,
+  autoOpenAdd = false,
+  autoRestockProduct = null,
+  onResetAutoOpen,
+  onCancelToPrevious
 }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all'); // 'all', 'in-stock', 'low-stock', 'out-of-stock'
@@ -21,6 +25,31 @@ export default function ProductsPage({
   // Quick Restock State
   const [restockProduct, setRestockProduct] = useState(null);
   const [restockQty, setRestockQty] = useState('');
+  React.useEffect(() => {
+    if (autoOpenAdd) {
+      setFormData(initialEmptyProduct);
+      setEditingProduct(null);
+      setIsEditing(true);
+      if (onResetAutoOpen) onResetAutoOpen();
+    } else if (autoRestockProduct) {
+      setRestockProduct(autoRestockProduct);
+      setRestockQty('');
+      if (onResetAutoOpen) onResetAutoOpen();
+    }
+  }, [autoOpenAdd, autoRestockProduct]);
+
+  const handleCloseModal = () => {
+    setIsEditing(false);
+    setEditingProduct(null);
+    if (onCancelToPrevious) onCancelToPrevious();
+  };
+
+  const handleCloseRestockModal = () => {
+    setRestockProduct(null);
+    setRestockQty('');
+    if (onCancelToPrevious) onCancelToPrevious();
+  };
+
 
   const initialEmptyProduct = {
     name: '',
@@ -323,7 +352,7 @@ export default function ProductsPage({
               </h3>
               <button
                 type="button"
-                onClick={() => setIsEditing(false)}
+                onClick={handleCloseModal}
                 className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg"
               >
                 <X className="w-4 h-4" />
@@ -445,7 +474,7 @@ export default function ProductsPage({
               <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
                 <button
                   type="button"
-                  onClick={() => setIsEditing(false)}
+                  onClick={handleCloseModal}
                   className="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-lg cursor-pointer"
                 >
                   Cancel
@@ -469,7 +498,7 @@ export default function ProductsPage({
             <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 mb-3">
               <h4 className="text-sm font-bold text-slate-900">Add Stock / Restock</h4>
               <button
-                onClick={() => setRestockProduct(null)}
+                onClick={handleCloseRestockModal}
                 className="p-1 text-slate-400 hover:text-slate-600 rounded-lg"
               >
                 <X className="w-4 h-4" />
@@ -502,7 +531,7 @@ export default function ProductsPage({
               <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
                 <button
                   type="button"
-                  onClick={() => setRestockProduct(null)}
+                  onClick={handleCloseRestockModal}
                   className="px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg cursor-pointer"
                 >
                   Cancel

@@ -58,6 +58,10 @@ export default function App() {
   const [toastMessage, setToastMessage] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isMongoConnected, setIsMongoConnected] = useState(false);
+  const [previousTab, setPreviousTab] = useState(null);
+  const [autoOpenPurchase, setAutoOpenPurchase] = useState(false);
+  const [autoOpenProduct, setAutoOpenProduct] = useState(false);
+  const [autoRestockProd, setAutoRestockProd] = useState(null);
 
   // Initialize data on mount: loads locally first, then syncs with MongoDB Atlas if connected
   useEffect(() => {
@@ -115,6 +119,7 @@ export default function App() {
 
   // Create a fresh blank invoice
   const handleStartNewInvoice = (prefilledCustomer = null) => {
+    setPreviousTab(activeTab);
     const nextInvoiceNumber = generateNextInvoiceNumber(invoices);
     const today = new Date().toISOString().slice(0, 10);
     const due = new Date(Date.now() + 15 * 86400000).toISOString().slice(0, 10);
@@ -163,6 +168,28 @@ export default function App() {
     setActiveTab('invoices');
   };
 
+  // Start a new purchase from Dashboard
+  const handleStartNewPurchase = () => {
+    setPreviousTab('dashboard');
+    setAutoOpenPurchase(true);
+    setActiveTab('purchases');
+  };
+
+  // Restock product from Dashboard
+  const handleRestockProductFromDashboard = (prod) => {
+    setPreviousTab('dashboard');
+    setAutoRestockProd(prod);
+    setActiveTab('products');
+  };
+
+  // Return to previous tab if user cancels
+  const handleCancelToPrevious = () => {
+    if (previousTab) {
+      setActiveTab(previousTab);
+      setPreviousTab(null);
+    }
+  };
+
   // Start a new invoice prefilled with a catalog product
   const handleStartNewInvoiceWithProduct = (product) => {
     const nextInvoiceNumber = generateNextInvoiceNumber(invoices);
@@ -209,7 +236,7 @@ export default function App() {
     showToast(`Started new bill for ${product.name}!`);
   };
 
-  // Save invoice to MongoDB Atlas database & local cache
+  // Save invoice to database & local cache
   const handleSaveInvoice = async (invoiceToSave) => {
     const isNew = !invoices.some(i => i.id === invoiceToSave.id);
     
@@ -230,11 +257,28 @@ export default function App() {
       setProducts(getProductsList());
     }
 
+    // Immediate optimistic update so invoice appears in list right away
+    setInvoices(prev => {
+      const idx = prev.findIndex(i => i.id === invoiceToSave.id);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = invoiceToSave;
+        return next;
+      }
+      return [invoiceToSave, ...prev];
+    });
+
     // Always mirror to localStorage
     saveInvoiceToStorage(invoiceToSave);
-    setActiveInvoice(invoiceToSave);
+    setActiveInvoice(null);
 
-    // Save directly to MongoDB Atlas & re-fetch from database
+    // If navigated from previous page (e.g. Dashboard), return to it
+    if (previousTab) {
+      setActiveTab(previousTab);
+      setPreviousTab(null);
+    }
+
+    // Save directly to database API & re-fetch from database
     try {
       await saveInvoiceApi(invoiceToSave);
       const [freshInvoices, freshProducts] = await Promise.all([
@@ -243,10 +287,8 @@ export default function App() {
       ]);
       if (Array.isArray(freshInvoices)) setInvoices(freshInvoices);
       if (Array.isArray(freshProducts)) setProducts(freshProducts);
-      showToast(`Invoice ${invoiceToSave.invoiceNumber} saved to database!`);
+      showToast(`Invoice ${invoiceToSave.invoiceNumber} saved successfully!`);
     } catch {
-      console.warn('Saved locally (offline fallback):', err.message);
-      setInvoices(getSavedInvoices());
       showToast(`Invoice ${invoiceToSave.invoiceNumber} saved (local mode)!`);
     }
   };
@@ -334,7 +376,25 @@ export default function App() {
 
   // Product Catalog & Stock handlers (database-driven)
   const handleSaveProduct = async (prod) => {
+    // Immediate optimistic update
+    setProducts(prev => {
+      const idx = prev.findIndex(p => p.id === prod.id);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = prod;
+        return next;
+      }
+      return [prod, ...prev];
+    });
+
     saveProduct(prod);
+
+    // If navigated from previous page (e.g. Dashboard), return to it
+    if (previousTab) {
+      setActiveTab(previousTab);
+      setPreviousTab(null);
+    }
+
     try {
       await saveProductApi(prod);
       const fresh = await fetchProductsApi();
@@ -362,6 +422,7 @@ export default function App() {
   };
 
   const handleAdjustStock = async (id, delta) => {
+    if (previousTab) { setActiveTab(previousTab); setPreviousTab(null); }
     adjustProductStock(id, delta);
     try {
       await adjustStockApi(id, delta);
@@ -390,7 +451,25 @@ export default function App() {
       supplierName: vendorName
     };
 
+    // Immediate optimistic update
+    setPurchases(prev => {
+      const idx = prev.findIndex(p => p.id === enriched.id);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = enriched;
+        return next;
+      }
+      return [enriched, ...prev];
+    });
+
     savePurchase(enriched);
+
+    // If navigated from previous page (e.g. Dashboard), return to it
+    if (previousTab) {
+      setActiveTab(previousTab);
+      setPreviousTab(null);
+    }
+
     try {
       await savePurchaseApi(enriched);
       const [freshPurchases, freshProducts] = await Promise.all([
@@ -401,8 +480,6 @@ export default function App() {
       if (Array.isArray(freshProducts)) setProducts(freshProducts);
       showToast(`Purchase ${purchaseNumber} recorded and stock updated in database!`);
     } catch {
-      setPurchases(getPurchasesList());
-      setProducts(getProductsList());
       showToast(`Purchase ${purchaseNumber} recorded and stock updated!`);
     }
   };
@@ -485,8 +562,9 @@ export default function App() {
               company={company}
               onNavigate={setActiveTab}
               onStartNewInvoice={() => handleStartNewInvoice()}
+              onStartNewPurchase={handleStartNewPurchase}
               onViewInvoice={handleViewInvoiceFromDashboard}
-              onRestockProduct={handleAdjustStock}
+              onRestockProduct={handleRestockProductFromDashboard}
             />
           )}
 
@@ -503,6 +581,7 @@ export default function App() {
               onToggleStatus={handleTogglePaymentStatus}
               onAddCustomer={handleSaveCustomer}
               generateNextInvoiceNumber={generateNextInvoiceNumber}
+              onCancelToPrevious={handleCancelToPrevious}
             />
           )}
 
@@ -512,6 +591,9 @@ export default function App() {
               products={products}
               onSavePurchase={handleSavePurchase}
               onDeletePurchase={handleDeletePurchase}
+              autoOpenAdd={autoOpenPurchase}
+              onResetAutoOpen={() => setAutoOpenPurchase(false)}
+              onCancelToPrevious={handleCancelToPrevious}
             />
           )}
 
@@ -522,6 +604,10 @@ export default function App() {
               onDeleteProduct={handleDeleteProduct}
               onAdjustStock={handleAdjustStock}
               onSelectProductForNewInvoice={handleStartNewInvoiceWithProduct}
+              autoOpenAdd={autoOpenProduct}
+              autoRestockProduct={autoRestockProd}
+              onResetAutoOpen={() => { setAutoOpenProduct(false); setAutoRestockProd(null); }}
+              onCancelToPrevious={handleCancelToPrevious}
             />
           )}
 

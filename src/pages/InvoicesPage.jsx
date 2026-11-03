@@ -1144,7 +1144,8 @@ export default function InvoicesPage({
   onDeleteInvoice,
   onToggleStatus,
   onAddCustomer,
-  generateNextInvoiceNumber
+  generateNextInvoiceNumber,
+  onCancelToPrevious
 }) {
   const [viewMode, setViewMode] = useState('list'); // 'list' | 'form' | 'preview'
   const [searchTerm, setSearchTerm] = useState('');
@@ -1158,7 +1159,7 @@ export default function InvoicesPage({
       setViewMode('form');
       setIsEditMode(false);
     }
-  }, [activeInvoice, invoices]);
+  }, [activeInvoice]);
 
   // Quick stats calculation
   let totalRevenue = 0;
@@ -1274,8 +1275,15 @@ export default function InvoicesPage({
   };
 
   const handleSaveAndShowList = (invToSave) => {
-    onSaveInvoice(invToSave);
+    setActiveInvoice(null);
     setViewMode('list');
+    onSaveInvoice(invToSave);
+  };
+
+  const handleCancelForm = () => {
+    setActiveInvoice(null);
+    setViewMode('list');
+    if (onCancelToPrevious) onCancelToPrevious();
   };
 
   // 1. RENDER EDIT FORM
@@ -1287,7 +1295,7 @@ export default function InvoicesPage({
         products={products}
         onSave={handleSaveAndShowList}
         onSaveAndPreview={handleSaveAndShowPreview}
-        onCancel={() => setViewMode('list')}
+        onCancel={handleCancelForm}
         onAddCustomer={onAddCustomer}
         isEdit={isEditMode}
       />

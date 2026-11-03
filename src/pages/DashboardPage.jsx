@@ -13,6 +13,8 @@ export default function DashboardPage({
   company,
   onNavigate,
   onStartNewInvoice,
+  onStartNewPurchase,
+  onRestockProduct,
   onViewInvoice
 }) {
   // 1. Calculate Sales Totals
@@ -121,7 +123,7 @@ export default function DashboardPage({
           </button>
 
           <button
-            onClick={() => onNavigate('purchases')}
+            onClick={() => onStartNewPurchase ? onStartNewPurchase() : onNavigate('purchases')}
             className="inline-flex items-center gap-2 px-4.5 py-2.5 rounded-xl text-sm font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors cursor-pointer"
           >
             <Truck className="w-4.5 h-4.5 text-emerald-400" /> New Purchase
@@ -306,7 +308,7 @@ export default function DashboardPage({
 
           {/* Card 3: Products */}
           <div
-            onClick={() => onNavigate('products')}
+            onClick={() => onRestockProduct ? onRestockProduct(p) : onNavigate('products')}
             className="group bg-white p-4.5 rounded-2xl border border-slate-200 shadow-2xs hover:border-purple-400 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
           >
             <div>
