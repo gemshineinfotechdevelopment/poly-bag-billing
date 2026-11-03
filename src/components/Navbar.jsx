@@ -133,7 +133,7 @@ export default function Navbar({
               : 'bg-slate-50 text-slate-500 border-slate-200'
           }`}>
             <span className={`w-1.5 h-1.5 rounded-full ${isMongoConnected ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
-            <span>{isMongoConnected ? 'Atlas Synced' : 'Local Mode'}</span>
+            <span>{isMongoConnected ? 'Database Online' : 'Local Mode'}</span>
           </div>
 
           {/* Mobile current page indicator badge */}

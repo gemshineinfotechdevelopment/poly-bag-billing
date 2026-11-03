@@ -526,6 +526,18 @@ app.post('/api/seed', async (req, res) => {
   }
 });
 
+// ---------------- PRODUCTION STATIC CLIENT SERVING ----------------
+const distPath = path.join(__dirname, '../dist');
+app.use(express.static(distPath));
+
+// For any non-API request, send back React index.html for client-side routing
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api')) {
+    return next();
+  }
+  res.sendFile(path.join(distPath, 'index.html'));
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 PolyPack Billing API Server running on http://localhost:${PORT}`);
 });
