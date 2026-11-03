@@ -63,3 +63,4 @@ echo "Checking backend status..."
 sleep 2
 curl -s http://127.0.0.1:5025/api/status || echo "Server is starting up..."
 echo ""
+
